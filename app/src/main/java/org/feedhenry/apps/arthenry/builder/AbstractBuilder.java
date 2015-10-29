@@ -7,13 +7,14 @@ import org.feedhenry.apps.arthenry.FHClient;
  */
 public abstract class AbstractBuilder implements FHBuilder<FHClient.Builder> {
 
-
+    protected FHSyncClientBuilder syncBuilder;
+    protected FHAuthClientBuilder authBuilder;
 
     public FHSyncClientBuilder addSync() {
-        return new FHSyncClientBuilder(this);
+        return this.syncBuilder = new FHSyncClientBuilder(this);
     }
 
     public FHAuthClientBuilder addAuth() {
-        return new FHAuthClientBuilder(this);
+        return this.authBuilder = new FHAuthClientBuilder(this);
     }
 }

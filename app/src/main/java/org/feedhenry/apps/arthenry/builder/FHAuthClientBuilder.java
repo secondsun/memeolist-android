@@ -10,9 +10,19 @@ import org.feedhenry.apps.arthenry.InitCallbackListener;
 public class FHAuthClientBuilder implements FHBuilder<Builder> {
 
     private final FHBuilder<FHClient.Builder> parent;
+    private String authPolicyId;
 
     public FHAuthClientBuilder(FHBuilder<FHClient.Builder> parent) {
         this.parent = parent;
+    }
+
+    public FHAuthClientBuilder setAuthPolicyId(String authPolicyId) {
+        this.authPolicyId = authPolicyId;
+        return this;
+    }
+
+    public String getAuthPolicyId() {
+        return authPolicyId;
     }
 
     @Override
