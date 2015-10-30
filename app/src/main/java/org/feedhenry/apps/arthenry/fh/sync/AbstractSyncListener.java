@@ -1,4 +1,4 @@
-package org.feedhenry.apps.arthenry.sync;
+package org.feedhenry.apps.arthenry.fh.sync;
 
 import com.feedhenry.sdk.sync.FHSyncListener;
 import com.feedhenry.sdk.sync.NotificationMessage;

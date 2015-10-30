@@ -6,21 +6,22 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.feedhenry.sdk.FH;
-import com.feedhenry.sdk.FHActCallback;
 import com.feedhenry.sdk.FHResponse;
-import com.feedhenry.sdk.api2.FHAuthSession;
-import com.feedhenry.sdk.sync.FHSyncClient;
+import com.feedhenry.sdk.sync.FHSyncListener;
+import com.feedhenry.sdk.sync.NotificationMessage;
+
+import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
+import org.feedhenry.apps.arthenry.fh.FHClient;
+import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
+import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements InitCallbackListener {
+public class MainActivity extends AppCompatActivity implements InitCallbackListener, FHSyncListener {
 
     private FHClient fhClient;
 
@@ -38,8 +39,9 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
 
         this.fhClient = new FHClient.Builder(this)
                             .addInitCallback(this)
-                            .addFeature(FHAuthSession.class)
-                            .addFeature(FHSyncClient.class)
+                            .addFeature(new FHSyncClientConfig(this))
+                            .addFeature(new FHAuthClientConfig("AsciiSinker")
+                                                .setCallingActivity(this))
                             .build();
 
     }
@@ -64,12 +66,65 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
 
     @Override
     public void onInit(FHResponse fhResponse) {
-        Toast.makeText(this, "Success", Toast.LENGTH_LONG).show();
         emptyView.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void onInitError(FHResponse fhResponse) {
-        Toast.makeText(this, "Failure", Toast.LENGTH_LONG).show();
+    public void onInitError(ConnectionFailure fhResponse) {
+        if (fhResponse.hasResolution()) {
+            fhResponse.resolve(this, fhResponse.getResponseCode());
+        } else {
+            Toast.makeText(this, "Failure", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onSyncStarted(NotificationMessage notificationMessage) {
+        Toast.makeText(this, "Sync Started", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onSyncCompleted(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onUpdateOffline(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onCollisionDetected(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onRemoteUpdateFailed(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onRemoteUpdateApplied(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onLocalUpdateApplied(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onDeltaReceived(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onSyncFailed(NotificationMessage notificationMessage) {
+
+    }
+
+    @Override
+    public void onClientStorageFailed(NotificationMessage notificationMessage) {
+
     }
 }
