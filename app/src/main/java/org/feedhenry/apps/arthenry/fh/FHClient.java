@@ -19,6 +19,7 @@ import org.feedhenry.apps.arthenry.InitCallbackListener;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
+import org.json.fh.JSONObject;
 
 import java.util.ArrayList;
 
@@ -30,10 +31,10 @@ public class FHClient {
     private Looper looper;
     private ArrayList<InitCallbackListener> initCallbacks = new ArrayList<>();
     private Context appContext;
-    private FHSyncConfig syncConfig;
     private FHSyncListener syncListener;
     private FHSyncClient syncClient;
     private FHAuthClientConfig authConfig;
+    private FHSyncClientConfig syncBuilder;
 
     private FHClient() {
 
@@ -51,21 +52,26 @@ public class FHClient {
                     if (!session.exists()) {
                         postAuthenticationRequired(fhResponse);
                     } else {
-                        postConnectSuccessRunner(fhResponse);
 
-                        if (syncConfig != null) {
-                            syncClient = FHSyncClient.getInstance();
-                            syncClient.init(appContext, syncConfig, syncListener);
+                        try {
+                            if (syncBuilder != null) {
+                                syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                            }
+                            setupSync();
+                            postConnectSuccessRunner(fhResponse);
+                        } catch (Exception e) {
+                            postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
                         }
+
                     }
 
                 } else {
 
-                    postConnectSuccessRunner(fhResponse);
-
-                    if (syncConfig != null) {
-                        syncClient = FHSyncClient.getInstance();
-                        syncClient.init(appContext, syncConfig, syncListener);
+                    try {
+                        setupSync();
+                        postConnectSuccessRunner(fhResponse);
+                    } catch (Exception e) {
+                        postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
                     }
                 }
             }
@@ -75,6 +81,44 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
+    }
+
+    private void setupSync() {
+        if (syncBuilder != null) {
+            FHSyncConfig syncConfig = new FHSyncConfig();
+            syncConfig.setAutoSyncLocalUpdates(syncBuilder.isAutoSyncLocalUpdates());
+            syncConfig.setCrashCountWait(syncBuilder.getCrashCountWait());
+            syncConfig.setNotifyClientStorageFailed(syncBuilder.isNotifyClientStorageFailed());
+            syncConfig.setNotifyDeltaReceived(syncBuilder.isNotifyDeltaReceived());
+            syncConfig.setNotifyLocalUpdateApplied(syncBuilder.isNotifyLocalUpdateApplied());
+            syncConfig.setNotifyOfflineUpdate(syncBuilder.isNotifyOfflineUpdate());
+            syncConfig.setNotifyRemoteUpdateApplied(syncBuilder.isNotifyRemoteUpdateApplied());
+            syncConfig.setNotifySyncStarted(syncBuilder.isNotifySyncStarted());
+            syncConfig.setNotifySyncFailed(syncBuilder.isNotifySyncFailed());
+            syncConfig.setNotifySyncComplete(syncBuilder.isNotifySyncComplete());
+            syncConfig.setNotifySyncCollisions(syncBuilder.isNotifySyncCollisions());
+            syncConfig.setNotifyUpdateFailed(syncBuilder.isNotifyRemoteUpdateFailed());
+            syncConfig.setResendCrashedUpdates(syncBuilder.isResendCrashedUpdates());
+            syncConfig.setSyncFrequency(syncBuilder.getSyncFrequencySeconds());
+            syncConfig.setUseCustomSync(syncBuilder.isUseCustomSync());
+
+            syncClient = FHSyncClient.getInstance();
+            syncClient.init(appContext, syncConfig, syncListener);
+
+            JSONObject queryParams = syncBuilder.getQueryParams();
+            JSONObject metaData = syncBuilder.getMetaData();
+
+            try {
+                for (String dataSet : syncBuilder.getDataSets()) {
+
+
+                    syncClient.manage(dataSet, null, queryParams, metaData);
+
+                }
+            } catch (Exception e) {
+                postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+            }
+        }
     }
 
     private void postAuthenticationRequired(FHResponse fhResponse) {
@@ -191,24 +235,9 @@ public class FHClient {
             client.appContext = context;
 
             if (this.syncBuilder != null) {
-                FHSyncConfig syncConfig = new FHSyncConfig();
-                syncConfig.setAutoSyncLocalUpdates(syncBuilder.isAutoSyncLocalUpdates());
-                syncConfig.setCrashCountWait(syncBuilder.getCrashCountWait());
-                syncConfig.setNotifyClientStorageFailed(syncBuilder.isNotifyClientStorageFailed());
-                syncConfig.setNotifyDeltaReceived(syncBuilder.isNotifyDeltaReceived());
-                syncConfig.setNotifyLocalUpdateApplied(syncBuilder.isNotifyLocalUpdateApplied());
-                syncConfig.setNotifyOfflineUpdate(syncBuilder.isNotifyOfflineUpdate());
-                syncConfig.setNotifyRemoteUpdateApplied(syncBuilder.isNotifyRemoteUpdateApplied());
-                syncConfig.setNotifySyncStarted(syncBuilder.isNotifySyncStarted());
-                syncConfig.setNotifySyncFailed(syncBuilder.isNotifySyncFailed());
-                syncConfig.setNotifySyncComplete(syncBuilder.isNotifySyncComplete());
-                syncConfig.setNotifySyncCollisions(syncBuilder.isNotifySyncCollisions());
-                syncConfig.setNotifyUpdateFailed(syncBuilder.isNotifyRemoteUpdateFailed());
-                syncConfig.setResendCrashedUpdates(syncBuilder.isResendCrashedUpdates());
-                syncConfig.setSyncFrequency(this.syncBuilder.getSyncFrequencySeconds());
-                syncConfig.setUseCustomSync(syncBuilder.isUseCustomSync());
+
                 client.syncListener = syncBuilder.getSyncListener();
-                client.syncConfig = syncConfig;
+                client.syncBuilder = syncBuilder;
             }
 
             if (this.authBuilder != null) {

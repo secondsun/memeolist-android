@@ -25,10 +25,14 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
 
     private FHClient fhClient;
 
-    @Bind(R.id.toolbar) Toolbar toolbar;
-    @Bind(R.id.fab) FloatingActionButton fab;
-    @Bind(R.id.empty) View emptyView;
-    @Bind(R.id.scrollView) View scrollView;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.fab)
+    FloatingActionButton fab;
+    @Bind(R.id.empty)
+    View emptyView;
+    @Bind(R.id.scrollView)
+    View scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +42,16 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
         setSupportActionBar(toolbar);
 
         this.fhClient = new FHClient.Builder(this)
-                            .addInitCallback(this)
-                            .addFeature(new FHSyncClientConfig(this))
-                            .addFeature(new FHAuthClientConfig("AsciiSinker")
-                                                .setCallingActivity(this))
-                            .build();
+                .addInitCallback(this)
+                .addFeature(new FHSyncClientConfig(this)
+                        .addDataSet("photos")
+                        .setNotifySyncStarted(true)
+                        .setAutoSyncLocalUpdates(true)
+                        .setNotifySyncComplete(true)
+                        .setSyncFrequencySeconds(10))
+                .addFeature(new FHAuthClientConfig("AsciiSinker")
+                        .setCallingActivity(this))
+                .build();
 
     }
 

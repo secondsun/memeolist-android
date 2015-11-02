@@ -2,6 +2,12 @@ package org.feedhenry.apps.arthenry.fh.sync;
 
 import com.feedhenry.sdk.sync.FHSyncListener;
 
+import org.json.fh.JSONObject;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by summers on 10/29/15.
  */
@@ -22,8 +28,11 @@ public class FHSyncClientConfig {
     private int crashCountWait = 10;
     private boolean resendCrashedUpdates = true;
     private boolean useCustomSync = false;
+    private Set<String> dataSets = new HashSet<>();
 
     private final FHSyncListener syncListener;
+    private JSONObject queryParams = new JSONObject();
+    private JSONObject metaData = new JSONObject();
 
     public FHSyncClientConfig(FHSyncListener syncListener) {
         this.syncListener = syncListener;
@@ -105,6 +114,15 @@ public class FHSyncClientConfig {
         return this;
     }
 
+    public FHSyncClientConfig addDataSet(String dataSet) {
+        dataSets.add(dataSet);
+        return this;
+    }
+
+    public Set<String> getDataSets(){
+        return Collections.unmodifiableSet(dataSets);
+    }
+
     public int getSyncFrequencySeconds() {
         return syncFrequencySeconds;
     }
@@ -169,4 +187,22 @@ public class FHSyncClientConfig {
         return syncListener;
     }
 
+    public FHSyncClientConfig addQueryParam(String key, Object value) {
+        queryParams.append(key, value);
+        return this;
+    }
+
+
+    public FHSyncClientConfig addMetaData(String key, Object value) {
+        metaData.append(key, value);
+        return this;
+    }
+
+    public JSONObject getQueryParams() {
+        return queryParams;
+    }
+
+    public JSONObject getMetaData() {
+        return metaData;
+    }
 }
