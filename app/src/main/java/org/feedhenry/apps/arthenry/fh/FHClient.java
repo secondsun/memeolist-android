@@ -3,6 +3,7 @@ package org.feedhenry.apps.arthenry.fh;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.feedhenry.sdk.FH;
 import com.feedhenry.sdk.FHActCallback;
@@ -22,6 +23,8 @@ import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
 import org.json.fh.JSONObject;
 
 import java.util.ArrayList;
+
+import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by summers on 10/29/15.
@@ -45,12 +48,30 @@ public class FHClient {
 
 
             @Override
-            public void success(FHResponse fhResponse) {
+            public void success(final FHResponse fhResponse) {
 
                 if (authConfig != null) {
-                    FHAuthSession session = new FHAuthSession(DataManager.getInstance(), new FHHttpClient());
+                    final FHAuthSession session = new FHAuthSession(DataManager.getInstance(), new FHHttpClient());
                     if (!session.exists()) {
-                        postAuthenticationRequired(fhResponse);
+                        postAuthenticationRequired(fhResponse, new FHActCallback() {
+                            @Override
+                            public void success(FHResponse fhAuthResponse) {
+                                try {
+                                    if (syncBuilder != null) {
+                                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                                    }
+                                    Log.d("Connect", fhAuthResponse.getJson().toString());
+                                    postCheckAccount(fhAuthResponse);
+                                } catch (Exception e) {
+                                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+                                }
+                            }
+
+                            @Override
+                            public void fail(FHResponse fhResponse) {
+                                postConnectFailureRunner(fhResponse);
+                            }
+                        });
                     } else {
 
                         try {
@@ -81,6 +102,26 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
+    }
+
+    private void postCheckAccount(FHResponse fhResponse) {
+        try {
+            FH.cloud("/account/login", "POST", new Header[0], fhResponse.getJson(), new FHActCallback() {
+                @Override
+                public void success(FHResponse fhResponse) {
+                    setupSync();
+                    postConnectSuccessRunner(fhResponse);
+                }
+
+                @Override
+                public void fail(FHResponse fhResponse) {
+                    throw new RuntimeException(fhResponse.getErrorMessage());
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private void setupSync() {
@@ -121,20 +162,10 @@ public class FHClient {
         }
     }
 
-    private void postAuthenticationRequired(FHResponse fhResponse) {
+    private void postAuthenticationRequired(FHResponse fhResponse, final FHActCallback callback) {
         Runnable authResolver = null;
         try {
-            authResolver = FHAuthUtil.buildAuthResolver(this.authConfig, new FHActCallback() {
-                @Override
-                public void success(FHResponse fhResponse) {
-                    postAuthenticationRequired(fhResponse);
-                }
-
-                @Override
-                public void fail(FHResponse fhResponse) {
-                    postConnectFailureRunner(fhResponse);
-                }
-            });
+            authResolver = FHAuthUtil.buildAuthResolver(this.authConfig, callback);
         } catch (FHNotReadyException e) {
             postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
         }

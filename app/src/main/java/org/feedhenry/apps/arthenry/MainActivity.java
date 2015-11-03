@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
                         .setAutoSyncLocalUpdates(true)
                         .setNotifySyncComplete(true)
                         .setSyncFrequencySeconds(10))
-                .addFeature(new FHAuthClientConfig("AsciiSinker")
+                .addFeature(new FHAuthClientConfig("Google")
                         .setCallingActivity(this))
                 .build();
 

@@ -35,30 +35,4 @@ public class FHAuthUtil {
 
     }
 
-//
-//    protected void doOAuth() {
-//        try {
-//            FHAuthRequest authRequest = FH.buildAuthRequest();
-//            authRequest.setPresentingActivity(this);
-//            authRequest.setAuthPolicyId(FH_AUTH_POLICY);
-//            authRequest.executeAsync(new FHActCallback() {
-//
-//                @Override
-//                public void success(FHResponse resp) {
-//                    onSessionValid(FHAuthSession.getToken());
-//                }
-//
-//                @Override
-//                public void fail(FHResponse resp) {
-//                    Toast.makeText(FHOAuth.this, "Log in failed", Toast.LENGTH_LONG).show();
-//                    Log.d(TAG, resp.getErrorMessage());
-//                    onNotLoggedIn();
-//                }
-//            });
-//        } catch (Exception e) {
-//            Toast.makeText(FHOAuth.this, e.getMessage(), Toast.LENGTH_LONG).show();
-//            Log.e(TAG, e.getMessage(), e);
-//            onNotLoggedIn();
-//        }
-//    }
 }
