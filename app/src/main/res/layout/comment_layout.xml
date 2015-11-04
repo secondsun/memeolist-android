@@ -1,51 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-
     style="@style/MyTheme.Base"
-    >
-
+    android:orientation="vertical">
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_view"
-        android:layout_width="300dp"
-        android:layout_height="100dp"
-        android:layout_margin="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_margin="1dp"
         android:elevation="1dp"
         card_view:cardCornerRadius="1dp">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:id="@+id/art_thumb"
-                android:scaleType="centerInside"/>
+            android:layout_height="match_parent"
+            android:background="@color/cardview_light_background"
+            android:orientation="vertical">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/author"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/art_card_title"
-                android:layout_toRightOf="@+id/art_thumb"
                 android:text="@string/nothing_here"
                 android:textSize="@dimen/font_regular"
+                android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/comment_text"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/art_thumb"
-                android:layout_below="@id/art_card_title"
-                android:id="@+id/art_card_first_detail"
                 android:text="@string/create_something"
+                android:textColor="@color/black"
                 android:textSize="@dimen/font_regular" />
 
 
-        </RelativeLayout>
+        </LinearLayout>
 
     </android.support.v7.widget.CardView>
 </LinearLayout>

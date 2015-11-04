@@ -1,5 +1,8 @@
 package org.feedhenry.apps.arthenry.vo;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.feedhenry.sdk.sync.FHSyncUtils;
 import com.google.gson.Gson;
 
@@ -11,7 +14,7 @@ import java.util.Date;
 /**
  * Created by summers on 11/3/15.
  */
-public class Project implements Comparable<Project> {
+public class Project implements Comparable<Project>,Parcelable {
 
     private String _id;
     private String ownerId;
@@ -86,7 +89,7 @@ public class Project implements Comparable<Project> {
             return false;
         if (sharedWith != null ? !sharedWith.equals(project.sharedWith) : project.sharedWith != null)
             return false;
-        return !(commits != null ? !commits.equals(project.commits) : project.commits != null);
+        return true;
 
     }
 
@@ -97,13 +100,14 @@ public class Project implements Comparable<Project> {
         result = 31 * result + (createdOn != null ? createdOn.hashCode() : 0);
         result = 31 * result + (updatedOn != null ? updatedOn.hashCode() : 0);
         result = 31 * result + (sharedWith != null ? sharedWith.hashCode() : 0);
-        result = 31 * result + (commits != null ? commits.hashCode() : 0);
+
         return result;
     }
 
 
     public long getFHhash() {
         JSONObject create = new JSONObject(new Gson().toJson(this));
+        create.remove("commits");
         try {
             return FHSyncUtils.generateHash(create.toString()).hashCode();
         } catch (Exception e) {
@@ -112,4 +116,44 @@ public class Project implements Comparable<Project> {
         }
 
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this._id);
+        dest.writeString(this.ownerId);
+        dest.writeLong(createdOn != null ? createdOn.getTime() : -1);
+        dest.writeLong(updatedOn != null ? updatedOn.getTime() : -1);
+        dest.writeStringList(this.sharedWith);
+        dest.writeTypedList(commits);
+    }
+
+    public Project() {
+    }
+
+    protected Project(Parcel in) {
+        this._id = in.readString();
+        this.ownerId = in.readString();
+        long tmpCreatedOn = in.readLong();
+        this.createdOn = tmpCreatedOn == -1 ? null : new Date(tmpCreatedOn);
+        long tmpUpdatedOn = in.readLong();
+        this.updatedOn = tmpUpdatedOn == -1 ? null : new Date(tmpUpdatedOn);
+        this.sharedWith = in.createStringArrayList();
+        this.commits = in.createTypedArrayList(Commit.CREATOR);
+    }
+
+    public static final Parcelable.Creator<Project> CREATOR = new Parcelable.Creator<Project>() {
+        public Project createFromParcel(Parcel source) {
+            return new Project(source);
+        }
+
+        public Project[] newArray(int size) {
+            return new Project[size];
+        }
+    };
 }

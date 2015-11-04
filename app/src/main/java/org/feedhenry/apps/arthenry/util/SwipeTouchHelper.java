@@ -4,11 +4,12 @@
  * Please refer to your contract with FeedHenry for the software license agreement.
  * If you do not have a contract, you do not have a license to use this software.
  */
-package org.feedhenry.apps.arthenry;
+package org.feedhenry.apps.arthenry.util;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
+import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
 import org.feedhenry.apps.arthenry.vo.Project;
 
 public class SwipeTouchHelper extends ItemTouchHelper.SimpleCallback {

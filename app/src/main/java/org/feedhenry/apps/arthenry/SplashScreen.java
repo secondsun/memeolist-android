@@ -14,6 +14,7 @@ import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
 import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
+import org.feedhenry.apps.arthenry.util.InitCallbackListener;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;

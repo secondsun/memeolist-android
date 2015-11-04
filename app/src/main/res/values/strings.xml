@@ -19,4 +19,10 @@
     <string name="nothing_here">Nothing here yet</string>
     <string name="create_something">Create an image and share with others</string>
     <string name="sign_in">Sign-In with Google</string>
+    <string name="add_comment_button">Add Comment</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_image_menu_title">Add Image</string>
+    <string name="share_project_menu_title">Share Project</string>
 </resources>

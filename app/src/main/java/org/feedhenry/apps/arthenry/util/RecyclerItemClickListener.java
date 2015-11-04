@@ -4,7 +4,7 @@
  * Please refer to your contract with FeedHenry for the software license agreement.
  * If you do not have a contract, you do not have a license to use this software.
  */
-package org.feedhenry.apps.arthenry;
+package org.feedhenry.apps.arthenry.util;
 
 import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;

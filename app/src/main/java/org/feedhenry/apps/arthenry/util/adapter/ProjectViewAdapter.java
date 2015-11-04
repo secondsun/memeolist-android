@@ -1,4 +1,4 @@
-package org.feedhenry.apps.arthenry;
+package org.feedhenry.apps.arthenry.util.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import org.feedhenry.apps.arthenry.R;
 import org.feedhenry.apps.arthenry.vo.Commit;
 import org.feedhenry.apps.arthenry.vo.Project;
 
@@ -45,25 +46,28 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
     @Override
     public void onBindViewHolder(ProjectViewHolder holder, int position) {
         Project project = getProject(position);
-        Commit firstCommit = project.getCommits().get(0);
+        Commit mostRecentCommit = project.getCommits().get(project.getCommits().size() - 1);
         holder.item = project;
-        Picasso.with(appContext).load(firstCommit.getPhotoUrl().toString()).into(holder.thumb);
-        holder.title.setText(firstCommit.getOwnerId());
-        holder.firstDetail.setText(firstCommit.getComments().get(0).getComment());
+        Picasso.with(appContext).load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
+        holder.title.setText(mostRecentCommit.getOwnerId());
+        holder.firstDetail.setText(mostRecentCommit.getComments().get(0).getComment());
+
+
+
     }
 
-    public Project getProject(int position) {
+    public synchronized Project getProject(int position) {
         return items.get(position);
     }
 
 
     @Override
-    public long getItemId(int position) {
+    public synchronized long getItemId(int position) {
         return items.get(position).getFHhash();
     }
 
     @Override
-    public int getItemCount() {
+    public synchronized int getItemCount() {
         return items.size();
     }
 
@@ -73,7 +77,7 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
      *
      * @param itemsToSync the currentViewOfTheSyncData
      */
-    public void addNewItemsFrom(Set<Project> itemsToSync) {
+    public synchronized void  addNewItemsFrom(Set<Project> itemsToSync) {
         for (Project item : itemsToSync) {
             if (!items.contains(item)) {
                 items.add(item);
@@ -87,7 +91,7 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
      *
      * @param itemsToSync the currentViewOfTheSyncData
      */
-    public void removeMissingItemsFrom(Set<Project> itemsToSync) {
+    public synchronized void removeMissingItemsFrom(Set<Project> itemsToSync) {
         items.retainAll(itemsToSync);
         Collections.sort(items);
     }

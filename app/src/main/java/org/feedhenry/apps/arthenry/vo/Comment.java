@@ -1,11 +1,14 @@
 package org.feedhenry.apps.arthenry.vo;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
 /**
  * Created by summers on 11/3/15.
  */
-public class Comment implements Comparable<Comment> {
+public class Comment implements Comparable<Comment>, Parcelable {
 
     private String ownerId;
     private Date createdOn = new Date();
@@ -76,4 +79,40 @@ public class Comment implements Comparable<Comment> {
         result = 31 * result + (comment != null ? comment.hashCode() : 0);
         return result;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.ownerId);
+        dest.writeLong(createdOn != null ? createdOn.getTime() : -1);
+        dest.writeLong(updatedOn != null ? updatedOn.getTime() : -1);
+        dest.writeString(this.comment);
+    }
+
+    public Comment() {
+    }
+
+    protected Comment(Parcel in) {
+        this.ownerId = in.readString();
+        long tmpCreatedOn = in.readLong();
+        this.createdOn = tmpCreatedOn == -1 ? null : new Date(tmpCreatedOn);
+        long tmpUpdatedOn = in.readLong();
+        this.updatedOn = tmpUpdatedOn == -1 ? null : new Date(tmpUpdatedOn);
+        this.comment = in.readString();
+    }
+
+    public static final Creator<Comment> CREATOR = new Creator<Comment>() {
+        public Comment createFromParcel(Parcel source) {
+            return new Comment(source);
+        }
+
+        public Comment[] newArray(int size) {
+            return new Comment[size];
+        }
+    };
 }

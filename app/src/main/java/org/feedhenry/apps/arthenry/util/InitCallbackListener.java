@@ -1,4 +1,4 @@
-package org.feedhenry.apps.arthenry;
+package org.feedhenry.apps.arthenry.util;
 
 import com.feedhenry.sdk.FHResponse;
 

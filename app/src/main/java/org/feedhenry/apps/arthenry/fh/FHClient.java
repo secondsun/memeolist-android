@@ -17,7 +17,7 @@ import com.feedhenry.sdk.utils.DataManager;
 import com.feedhenry.sdk2.FHHttpClient;
 import com.google.gson.Gson;
 
-import org.feedhenry.apps.arthenry.InitCallbackListener;
+import org.feedhenry.apps.arthenry.util.InitCallbackListener;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;

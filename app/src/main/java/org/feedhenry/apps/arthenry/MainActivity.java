@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -21,6 +20,11 @@ import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
 import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
+import org.feedhenry.apps.arthenry.util.InitCallbackListener;
+import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
+import org.feedhenry.apps.arthenry.util.RecyclerItemClickListener;
+import org.feedhenry.apps.arthenry.util.SwipeTouchHelper;
+import org.feedhenry.apps.arthenry.view.ProjectDetailDialog;
 import org.feedhenry.apps.arthenry.vo.Comment;
 import org.feedhenry.apps.arthenry.vo.Commit;
 import org.feedhenry.apps.arthenry.vo.Project;
@@ -95,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
     }
 
     private void showPopup(Project project) {
-        Toast.makeText(this, "Project clicked", Toast.LENGTH_LONG).show();
+        ProjectDetailDialog.newInstance(project).show(getFragmentManager(), "DETAIL");
     }
 
     @OnClick(R.id.fab)
