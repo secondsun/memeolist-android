@@ -258,6 +258,10 @@ public class FHClient {
         return account;
     }
 
+    public FHSyncClient getSyncClient() {
+        return syncClient;
+    }
+
     public static class Builder {
         protected FHSyncClientConfig syncBuilder;
         protected FHAuthClientConfig authBuilder;

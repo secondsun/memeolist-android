@@ -2,6 +2,7 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+
     style="@style/MyTheme.Base"
     >
 
@@ -10,8 +11,9 @@
         android:id="@+id/card_view"
         android:layout_width="300dp"
         android:layout_height="100dp"
+        android:layout_margin="4dp"
         android:layout_gravity="center"
-        card_view:cardCornerRadius="4dp">
+        card_view:cardCornerRadius="1dp">
 
         <RelativeLayout
             android:layout_width="match_parent"

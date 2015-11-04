@@ -1,5 +1,10 @@
 package org.feedhenry.apps.arthenry.vo;
 
+import com.feedhenry.sdk.sync.FHSyncUtils;
+import com.google.gson.Gson;
+
+import org.json.fh.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -9,11 +14,11 @@ import java.util.Date;
 public class Project implements Comparable<Project> {
 
     private String _id;
-    private Long ownerId;
-    private Date createdOn;
-    private Date updatedOn;
+    private String ownerId;
+    private Date createdOn = new Date();
+    private Date updatedOn = new Date();
 
-    private ArrayList<Integer> sharedWith = new ArrayList<>();
+    private ArrayList<String> sharedWith = new ArrayList<>();
     private ArrayList<Commit> commits = new ArrayList<>();
 
     public String get_id() {
@@ -24,19 +29,19 @@ public class Project implements Comparable<Project> {
         this._id = _id;
     }
 
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
-    public ArrayList<Integer> getSharedWith() {
+    public ArrayList<String> getSharedWith() {
         return sharedWith;
     }
 
-    public void setSharedWith(ArrayList<Integer> sharedWith) {
+    public void setSharedWith(ArrayList<String> sharedWith) {
         this.sharedWith = sharedWith;
     }
 
@@ -54,6 +59,10 @@ public class Project implements Comparable<Project> {
 
     public void setUpdatedOn(Date updatedOn) {
         this.updatedOn = updatedOn;
+    }
+
+    public ArrayList<Commit> getCommits() {
+        return commits;
     }
 
     @Override
@@ -90,5 +99,17 @@ public class Project implements Comparable<Project> {
         result = 31 * result + (sharedWith != null ? sharedWith.hashCode() : 0);
         result = 31 * result + (commits != null ? commits.hashCode() : 0);
         return result;
+    }
+
+
+    public long getFHhash() {
+        JSONObject create = new JSONObject(new Gson().toJson(this));
+        try {
+            return FHSyncUtils.generateHash(create.toString()).hashCode();
+        } catch (Exception e) {
+            //TODO : Refactor the sdk code to expose the correct exception
+            throw new RuntimeException(e);
+        }
+
     }
 }

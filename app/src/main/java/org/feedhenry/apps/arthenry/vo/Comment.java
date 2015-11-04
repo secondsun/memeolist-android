@@ -6,25 +6,18 @@ import java.util.Date;
  * Created by summers on 11/3/15.
  */
 public class Comment implements Comparable<Comment> {
-    private String _id;
-    private Long ownerId;
+
+    private String ownerId;
     private Date createdOn = new Date();
     private Date updatedOn = new Date();
     private String comment;
 
-    public String get_id() {
-        return _id;
-    }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
-
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -64,7 +57,7 @@ public class Comment implements Comparable<Comment> {
 
         Comment comment1 = (Comment) o;
 
-        if (_id != null ? !_id.equals(comment1._id) : comment1._id != null) return false;
+
         if (ownerId != null ? !ownerId.equals(comment1.ownerId) : comment1.ownerId != null)
             return false;
         if (createdOn != null ? !createdOn.equals(comment1.createdOn) : comment1.createdOn != null)
@@ -77,8 +70,7 @@ public class Comment implements Comparable<Comment> {
 
     @Override
     public int hashCode() {
-        int result = _id != null ? _id.hashCode() : 0;
-        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
+        int result =  (ownerId != null ? ownerId.hashCode() : 0);
         result = 31 * result + (createdOn != null ? createdOn.hashCode() : 0);
         result = 31 * result + (updatedOn != null ? updatedOn.hashCode() : 0);
         result = 31 * result + (comment != null ? comment.hashCode() : 0);

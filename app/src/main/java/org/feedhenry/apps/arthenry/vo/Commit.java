@@ -9,26 +9,18 @@ import java.util.Date;
  */
 public class Commit implements Comparable<Commit>{
 
-    private String _id;
-    private Long ownerId;
+    private String ownerId;
     private Date createdOn = new Date();
     private Date updatedOn = new Date();
     private URL photoUrl;
     private ArrayList<Comment> comments = new ArrayList<>();
 
-    public String get_id() {
-        return _id;
-    }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
-
-    public Long getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -76,7 +68,6 @@ public class Commit implements Comparable<Commit>{
 
         Commit commit = (Commit) o;
 
-        if (!_id.equals(commit._id)) return false;
         if (!ownerId.equals(commit.ownerId)) return false;
         if (!createdOn.equals(commit.createdOn)) return false;
         if (!updatedOn.equals(commit.updatedOn)) return false;
@@ -87,8 +78,7 @@ public class Commit implements Comparable<Commit>{
 
     @Override
     public int hashCode() {
-        int result = _id.hashCode();
-        result = 31 * result + ownerId.hashCode();
+        int result = ownerId.hashCode();
         result = 31 * result + createdOn.hashCode();
         result = 31 * result + updatedOn.hashCode();
         result = 31 * result + photoUrl.hashCode();
