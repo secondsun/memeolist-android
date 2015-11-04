@@ -73,13 +73,65 @@ public class FHClient {
                             }
                         });
                     } else {
-
                         try {
-                            if (syncBuilder != null) {
-                                syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                            }
-                            setupSync();
-                            postConnectSuccessRunner(fhResponse);
+                            session.verify(new com.feedhenry.sdk.api.FHAuthSession.Callback() {
+
+                                @Override
+                                public void handleSuccess(boolean b) {
+                                    if (!b) {
+                                        postAuthenticationRequired(fhResponse, new FHActCallback() {
+                                            @Override
+                                            public void success(FHResponse fhAuthResponse) {
+                                                try {
+                                                    if (syncBuilder != null) {
+                                                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                                                    }
+                                                    Log.d("Connect", fhAuthResponse.getJson().toString());
+                                                    postCheckAccount(fhAuthResponse);
+                                                } catch (Exception e) {
+                                                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+                                                }
+                                            }
+
+                                            @Override
+                                            public void fail(FHResponse fhResponse) {
+                                                postConnectFailureRunner(fhResponse);
+                                            }
+                                        });
+                                    } else {
+                                        if (syncBuilder != null) {
+                                            syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                                        }
+                                        setupSync();
+                                        postConnectSuccessRunner(fhResponse);
+                                    }
+                                }
+
+                                @Override
+                                public void handleError(FHResponse fhResponse) {
+                                    postAuthenticationRequired(fhResponse, new FHActCallback() {
+                                        @Override
+                                        public void success(FHResponse fhAuthResponse) {
+                                            try {
+                                                if (syncBuilder != null) {
+                                                    syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                                                }
+                                                Log.d("Connect", fhAuthResponse.getJson().toString());
+                                                postCheckAccount(fhAuthResponse);
+                                            } catch (Exception e) {
+                                                postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+                                            }
+                                        }
+
+                                        @Override
+                                        public void fail(FHResponse fhResponse) {
+                                            postConnectFailureRunner(fhResponse);
+                                        }
+                                    });
+                                }
+                            }, false);
+
+
                         } catch (Exception e) {
                             postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
                         }
