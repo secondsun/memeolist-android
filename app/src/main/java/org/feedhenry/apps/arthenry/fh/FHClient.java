@@ -51,95 +51,8 @@ public class FHClient {
             public void success(final FHResponse fhResponse) {
 
                 if (authConfig != null) {
-                    final FHAuthSession session = new FHAuthSession(DataManager.getInstance(), new FHHttpClient());
-                    if (!session.exists()) {
-                        postAuthenticationRequired(fhResponse, new FHActCallback() {
-                            @Override
-                            public void success(FHResponse fhAuthResponse) {
-                                try {
-                                    if (syncBuilder != null) {
-                                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                                    }
-                                    Log.d("Connect", fhAuthResponse.getJson().toString());
-                                    postCheckAccount(fhAuthResponse);
-                                } catch (Exception e) {
-                                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
-                                }
-                            }
-
-                            @Override
-                            public void fail(FHResponse fhResponse) {
-                                postConnectFailureRunner(fhResponse);
-                            }
-                        });
-                    } else {
-                        try {
-                            session.verify(new com.feedhenry.sdk.api.FHAuthSession.Callback() {
-
-                                @Override
-                                public void handleSuccess(boolean b) {
-                                    if (!b) {
-                                        postAuthenticationRequired(fhResponse, new FHActCallback() {
-                                            @Override
-                                            public void success(FHResponse fhAuthResponse) {
-                                                try {
-                                                    if (syncBuilder != null) {
-                                                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                                                    }
-                                                    Log.d("Connect", fhAuthResponse.getJson().toString());
-                                                    postCheckAccount(fhAuthResponse);
-                                                } catch (Exception e) {
-                                                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
-                                                }
-                                            }
-
-                                            @Override
-                                            public void fail(FHResponse fhResponse) {
-                                                postConnectFailureRunner(fhResponse);
-                                            }
-                                        });
-                                    } else {
-                                        if (syncBuilder != null) {
-                                            syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                                        }
-                                        setupSync();
-                                        postConnectSuccessRunner(fhResponse);
-                                    }
-                                }
-
-                                @Override
-                                public void handleError(FHResponse fhResponse) {
-                                    postAuthenticationRequired(fhResponse, new FHActCallback() {
-                                        @Override
-                                        public void success(FHResponse fhAuthResponse) {
-                                            try {
-                                                if (syncBuilder != null) {
-                                                    syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                                                }
-                                                Log.d("Connect", fhAuthResponse.getJson().toString());
-                                                postCheckAccount(fhAuthResponse);
-                                            } catch (Exception e) {
-                                                postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
-                                            }
-                                        }
-
-                                        @Override
-                                        public void fail(FHResponse fhResponse) {
-                                            postConnectFailureRunner(fhResponse);
-                                        }
-                                    });
-                                }
-                            }, false);
-
-
-                        } catch (Exception e) {
-                            postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
-                        }
-
-                    }
-
+                    performAuthThenSync(fhResponse);
                 } else {
-
                     try {
                         setupSync();
                         postConnectSuccessRunner(fhResponse);
@@ -154,6 +67,40 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
+    }
+
+    private void performAuthThenSync(final FHResponse fhResponse) {
+        final FHAuthSession session = new FHAuthSession(DataManager.getInstance(), new FHHttpClient());
+        if (!session.exists()) {
+            postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
+        } else {
+            try {
+                session.verify(new com.feedhenry.sdk.api.FHAuthSession.Callback() {
+
+                    @Override
+                    public void handleSuccess(boolean b) {
+                        if (!b) {
+                            postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
+                        } else {
+                            if (syncBuilder != null) {
+                                syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                            }
+                            setupSync();
+                            postConnectSuccessRunner(fhResponse);
+                        }
+                    }
+
+                    @Override
+                    public void handleError(FHResponse fhResponse) {
+                        postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));}
+                }, false);
+
+
+            } catch (Exception e) {
+                postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+            }
+
+        }
     }
 
     private void postCheckAccount(FHResponse fhResponse) {
@@ -333,5 +280,32 @@ public class FHClient {
 
     }
 
+    private class AuthCompleteCallback implements FHActCallback {
+
+        private final FHAuthSession session;
+
+        public AuthCompleteCallback(FHAuthSession session) {
+            this.session = session;
+        }
+
+        @Override
+            public void success(FHResponse fhAuthResponse) {
+                try {
+                    if (syncBuilder != null) {
+                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                    }
+                    Log.d("Connect", fhAuthResponse.getJson().toString());
+                    postCheckAccount(fhAuthResponse);
+                } catch (Exception e) {
+                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+                }
+            }
+
+            @Override
+            public void fail(FHResponse fhResponse) {
+                postConnectFailureRunner(fhResponse);
+            }
+
+    }
 }
 
