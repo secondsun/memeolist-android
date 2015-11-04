@@ -15,11 +15,13 @@ import com.feedhenry.sdk.sync.FHSyncConfig;
 import com.feedhenry.sdk.sync.FHSyncListener;
 import com.feedhenry.sdk.utils.DataManager;
 import com.feedhenry.sdk2.FHHttpClient;
+import com.google.gson.Gson;
 
 import org.feedhenry.apps.arthenry.InitCallbackListener;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
+import org.feedhenry.apps.arthenry.vo.Account;
 import org.json.fh.JSONObject;
 
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ public class FHClient {
     private FHSyncClient syncClient;
     private FHAuthClientConfig authConfig;
     private FHSyncClientConfig syncBuilder;
+    private Account account;
 
     private FHClient() {
 
@@ -82,11 +85,28 @@ public class FHClient {
                         if (!b) {
                             postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
                         } else {
-                            if (syncBuilder != null) {
-                                syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                            try {
+                                FH.cloud("/account/me", "GET", null, null, new FHActCallback() {
+                                    @Override
+                                    public void success(FHResponse fhResponse) {
+                                        setAccount(new Gson().fromJson(fhResponse.getJson().toString(), Account.class));
+                                        if (syncBuilder != null) {
+                                            syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
+                                        }
+                                        setupSync();
+                                        postConnectSuccessRunner(fhResponse);
+                                    }
+
+                                    @Override
+                                    public void fail(FHResponse fhResponse) {
+                                        postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
                             }
-                            setupSync();
-                            postConnectSuccessRunner(fhResponse);
+
                         }
                     }
 
@@ -108,6 +128,7 @@ public class FHClient {
             FH.cloud("/account/login", "POST", new Header[0], fhResponse.getJson(), new FHActCallback() {
                 @Override
                 public void success(FHResponse fhResponse) {
+                    setAccount(new Gson().fromJson(fhResponse.getJson().toString(), Account.class));
                     setupSync();
                     postConnectSuccessRunner(fhResponse);
                 }
@@ -227,6 +248,14 @@ public class FHClient {
             syncClient.destroy();
         }
         FH.stop();
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public Account getAccount() {
+        return account;
     }
 
     public static class Builder {

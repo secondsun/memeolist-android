@@ -7,11 +7,11 @@ import java.net.URL;
  */
 public class Account {
     private String _id;
-    private Long id;
+    private String id;
     private String email;
-    private String familyName;
+    private String family_name;
     private String gender;
-    private String givenName;
+    private String given_name;
     private URL picture;
 
     public String get_id() {
@@ -30,12 +30,12 @@ public class Account {
         this.email = email;
     }
 
-    public String getFamilyName() {
-        return familyName;
+    public String getFamily_name() {
+        return family_name;
     }
 
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
+    public void setFamily_name(String family_name) {
+        this.family_name = family_name;
     }
 
     public String getGender() {
@@ -46,12 +46,12 @@ public class Account {
         this.gender = gender;
     }
 
-    public String getGivenName() {
-        return givenName;
+    public String getGiven_name() {
+        return given_name;
     }
 
-    public void setGivenName(String givenName) {
-        this.givenName = givenName;
+    public void setGiven_name(String given_name) {
+        this.given_name = given_name;
     }
 
     public URL getPicture() {
@@ -62,11 +62,11 @@ public class Account {
         this.picture = picture;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -80,10 +80,10 @@ public class Account {
         if (_id != null ? !_id.equals(account._id) : account._id != null) return false;
         if (id != null ? !id.equals(account.id) : account.id != null) return false;
         if (email != null ? !email.equals(account.email) : account.email != null) return false;
-        if (familyName != null ? !familyName.equals(account.familyName) : account.familyName != null)
+        if (family_name != null ? !family_name.equals(account.family_name) : account.family_name != null)
             return false;
         if (gender != null ? !gender.equals(account.gender) : account.gender != null) return false;
-        if (givenName != null ? !givenName.equals(account.givenName) : account.givenName != null)
+        if (given_name != null ? !given_name.equals(account.given_name) : account.given_name != null)
             return false;
         return !(picture != null ? !picture.equals(account.picture) : account.picture != null);
 
@@ -94,9 +94,9 @@ public class Account {
         int result = _id != null ? _id.hashCode() : 0;
         result = 31 * result + (id != null ? id.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (familyName != null ? familyName.hashCode() : 0);
+        result = 31 * result + (family_name != null ? family_name.hashCode() : 0);
         result = 31 * result + (gender != null ? gender.hashCode() : 0);
-        result = 31 * result + (givenName != null ? givenName.hashCode() : 0);
+        result = 31 * result + (given_name != null ? given_name.hashCode() : 0);
         result = 31 * result + (picture != null ? picture.hashCode() : 0);
         return result;
     }
