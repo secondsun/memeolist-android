@@ -12,6 +12,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/MyTheme.Base"
+        android:name=".ArtHenryApplication"
         tools:replace="android:icon">
         <activity
             android:name=".MainActivity"

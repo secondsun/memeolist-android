@@ -1,8 +1,6 @@
 package org.feedhenry.apps.arthenry.fh;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.feedhenry.sdk.FH;
@@ -16,37 +14,43 @@ import com.feedhenry.sdk.sync.FHSyncListener;
 import com.feedhenry.sdk.utils.DataManager;
 import com.feedhenry.sdk2.FHHttpClient;
 import com.google.gson.Gson;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Produce;
 
-import org.feedhenry.apps.arthenry.util.InitCallbackListener;
+import org.feedhenry.apps.arthenry.events.InitFailed;
+import org.feedhenry.apps.arthenry.events.InitSuccessful;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
 import org.feedhenry.apps.arthenry.vo.Account;
 import org.json.fh.JSONObject;
 
-import java.util.ArrayList;
-
 import cz.msebera.android.httpclient.Header;
 
-/**
- * Created by summers on 10/29/15.
- */
 public class FHClient {
 
-    private Looper looper;
-    private ArrayList<InitCallbackListener> initCallbacks = new ArrayList<>();
     private Context appContext;
     private FHSyncListener syncListener;
     private FHSyncClient syncClient;
     private FHAuthClientConfig authConfig;
     private FHSyncClientConfig syncBuilder;
     private Account account;
+    private boolean isConnected = false;
+    private boolean isConnecting = false;
+    private final Bus bus;
+    private InitFailed failure = null;
+    private InitSuccessful success = null;
 
-    private FHClient() {
-
+    private FHClient(Bus bus) {
+        this.bus = bus;
+        bus.register(this);
     }
 
     public void connect() {
+        if (isConnected || isConnecting) {
+            return;
+        }
+        isConnecting = true;
         FH.init(appContext, new FHActCallback() {
 
 
@@ -57,9 +61,9 @@ public class FHClient {
                     performAuthThenSync(fhResponse);
                 } else {
                     try {
-                        setupSync();
-                        postConnectSuccessRunner(fhResponse);
+                        setupSync(fhResponse);
                     } catch (Exception e) {
+
                         postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
                     }
                 }
@@ -93,8 +97,7 @@ public class FHClient {
                                         if (syncBuilder != null) {
                                             syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
                                         }
-                                        setupSync();
-                                        postConnectSuccessRunner(fhResponse);
+                                        setupSync(fhResponse);
                                     }
 
                                     @Override
@@ -123,14 +126,24 @@ public class FHClient {
         }
     }
 
+    @Produce
+    public InitFailed produceFailure() {
+        return failure;
+    }
+
+    @Produce
+    public InitSuccessful produceSuccessful() {
+        return success;
+    }
+
     private void postCheckAccount(FHResponse fhResponse) {
         try {
             FH.cloud("/account/login", "POST", new Header[0], fhResponse.getJson(), new FHActCallback() {
                 @Override
                 public void success(FHResponse fhResponse) {
                     setAccount(new Gson().fromJson(fhResponse.getJson().toString(), Account.class));
-                    setupSync();
-                    postConnectSuccessRunner(fhResponse);
+                    setupSync(fhResponse);
+
                 }
 
                 @Override
@@ -144,7 +157,7 @@ public class FHClient {
 
     }
 
-    private void setupSync() {
+    private void setupSync(FHResponse fhResponse) {
         if (syncBuilder != null) {
             FHSyncConfig syncConfig = new FHSyncConfig();
             syncConfig.setAutoSyncLocalUpdates(syncBuilder.isAutoSyncLocalUpdates());
@@ -171,19 +184,38 @@ public class FHClient {
 
             try {
                 for (String dataSet : syncBuilder.getDataSets()) {
-
-
                     syncClient.manage(dataSet, null, queryParams, metaData);
-
                 }
+                postConnectSuccessRunner(fhResponse);
             } catch (Exception e) {
                 postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
             }
         }
     }
 
+
+    private void postConnectSuccessRunner(FHResponse fhResponse) {
+        isConnected = true;
+        isConnecting = false;
+        this.failure = null;
+        bus.post(this.success = new InitSuccessful(fhResponse));
+    }
+
+    private void postConnectFailureRunner(FHResponse fhResponse) {
+        isConnecting = false;
+        this.success = null;
+        bus.post(this.failure = new InitFailed(new ConnectionFailure(fhResponse)));
+    }
+
+    private void postConnectFailureRunner(ConnectionFailure failure) {
+        isConnecting = false;
+        this.success = null;
+        bus.post(this.failure = new InitFailed(failure));
+    }
+
     private void postAuthenticationRequired(FHResponse fhResponse, final FHActCallback callback) {
-        Runnable authResolver = null;
+
+        Resolution authResolver = null;
         try {
             authResolver = FHAuthUtil.buildAuthResolver(this.authConfig, callback);
         } catch (FHNotReadyException e) {
@@ -191,63 +223,6 @@ public class FHClient {
         }
         ConnectionFailure failure = new ConnectionFailure(fhResponse, authResolver, FHAuthUtil.SIGN_IN_REQUIRED);
         postConnectFailureRunner(failure);
-    }
-
-    private void postConnectSuccessRunner(FHResponse fhResponse) {
-        new Handler(looper).post(callSuccessCallbacks(fhResponse));
-    }
-
-    private Runnable callSuccessCallbacks(final FHResponse fhResponse) {
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                for (InitCallbackListener listener : initCallbacks) {
-                    listener.onInit(fhResponse);
-                }
-            }
-        };
-    }
-
-
-    private Runnable callFailureCallbacks(final ConnectionFailure failure) {
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                for (InitCallbackListener listener : initCallbacks) {
-                    listener.onInitError(failure);
-                }
-            }
-        };
-    }
-
-    private Runnable callFailureCallbacks(final FHResponse fhResponse) {
-
-        return new Runnable() {
-            @Override
-            public void run() {
-                for (InitCallbackListener listener : initCallbacks) {
-                    listener.onInitError(new ConnectionFailure(fhResponse));
-                }
-            }
-        };
-    }
-
-    private void postConnectFailureRunner(FHResponse fhResponse) {
-        new Handler(looper).post(callFailureCallbacks(fhResponse));
-    }
-
-    private void postConnectFailureRunner(ConnectionFailure failure) {
-        new Handler(looper).post(callFailureCallbacks(failure));
-    }
-
-
-    public void disconnect() {
-        if (syncClient != null) {
-            syncClient.destroy();
-        }
-        FH.stop();
     }
 
     public void setAccount(Account account) {
@@ -267,18 +242,11 @@ public class FHClient {
         protected FHAuthClientConfig authBuilder;
 
         private final Context context;
-        private final Looper looper;
-        private ArrayList<InitCallbackListener> initCallbacks = new ArrayList<>();
+        private final Bus bus;
 
-        public Builder(Context context) {
+        public Builder(Context context, Bus bus) {
             this.context = context.getApplicationContext();
-            this.looper = context.getMainLooper();
-        }
-
-
-        public Builder addInitCallback(InitCallbackListener listener) {
-            this.initCallbacks.add(listener);
-            return this;
+            this.bus = bus;
         }
 
         public Builder addFeature(FHAuthClientConfig authBuilder) {
@@ -292,9 +260,7 @@ public class FHClient {
         }
 
         public FHClient build() {
-            FHClient client = new FHClient();
-            client.looper = looper;
-            client.initCallbacks = initCallbacks;
+            FHClient client = new FHClient(bus);
             client.appContext = context;
 
             if (this.syncBuilder != null) {
@@ -307,10 +273,15 @@ public class FHClient {
                 client.authConfig = authBuilder;
             }
 
+
             return client;
         }
 
 
+    }
+
+    public boolean isConnected() {
+        return isConnected;
     }
 
     private class AuthCompleteCallback implements FHActCallback {

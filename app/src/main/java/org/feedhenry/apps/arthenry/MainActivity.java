@@ -19,8 +19,9 @@ import com.google.gson.Gson;
 import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
 import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
+import org.feedhenry.apps.arthenry.fh.sync.AbstractSyncListener;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
-import org.feedhenry.apps.arthenry.util.InitCallbackListener;
+import org.feedhenry.apps.arthenry.fh.sync.InjectableSyncListener;
 import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
 import org.feedhenry.apps.arthenry.util.RecyclerItemClickListener;
 import org.feedhenry.apps.arthenry.util.SwipeTouchHelper;
@@ -35,15 +36,17 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import javax.inject.Inject;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements InitCallbackListener, FHSyncListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String DATA_ID = "photos";
-    private FHClient fhClient;
+
 
     @Bind(R.id.toolbar)
     Toolbar toolbar;
@@ -56,13 +59,27 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
     RecyclerView artCardsList;
     private ProjectViewAdapter adapter;
 
+    @Inject
+    InjectableSyncListener listener;
+    @Inject
+    FHClient fhClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         ButterKnife.bind(this);
+        ((ArtHenryApplication)getApplicationContext()).getObjectGraph().inject(this);
+
         setSupportActionBar(toolbar);
         adapter = new ProjectViewAdapter(getApplicationContext());
+
+        setupView();
+
+    }
+
+    private void setupView() {
         artCardsList.setLayoutManager(new GridLayoutManager(this, 3));
         artCardsList.setAdapter(adapter);
         artCardsList.addOnItemTouchListener(new RecyclerItemClickListener(
@@ -83,19 +100,6 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
         });
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(artCardsList);
-
-        this.fhClient = new FHClient.Builder(this)
-                .addInitCallback(this)
-                .addFeature(new FHSyncClientConfig(this)
-                        .addDataSet(DATA_ID)
-                        .setNotifySyncStarted(true)
-                        .setAutoSyncLocalUpdates(true)
-                        .setNotifySyncComplete(true)
-                        .setSyncFrequencySeconds(10))
-                .addFeature(new FHAuthClientConfig("Google")
-                        .setCallingActivity(this))
-                .build();
-
     }
 
     private void showPopup(Project project) {
@@ -137,129 +141,78 @@ public class MainActivity extends AppCompatActivity implements InitCallbackListe
     @Override
     protected void onStart() {
         super.onStart();
-        fhClient.connect();
+        listener.attachListener(new SyncHandler());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        fhClient.disconnect();
+        listener.detachListener();
     }
 
-    @Override
-    public void onInit(FHResponse fhResponse) {
+    private class SyncHandler extends AbstractSyncListener {
+        @Override
+        //On sync complete, list all the data and update the adapter
+        public void onSyncCompleted(NotificationMessage pMessage) {
+            Log.d(TAG, "syncClient - onSyncCompleted");
+            Log.d(TAG, "Sync message: " + pMessage.getMessage());
 
-    }
+            JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
+            if (allData.length() > 0) {
+                emptyView.setVisibility(View.GONE);
+                artCardsList.setVisibility(View.VISIBLE);
+            } else {
+                emptyView.setVisibility(View.VISIBLE);
+                artCardsList.setVisibility(View.GONE);
+                return;
+            }
+            Iterator<String> it = allData.keys();
+            TreeSet<Project> itemsToSync = new TreeSet<Project>();
 
-    @Override
-    public void onInitError(ConnectionFailure fhResponse) {
-        if (fhResponse.hasResolution()) {
-            fhResponse.resolve(this, fhResponse.getResponseCode());
-        } else {
-            Toast.makeText(this, "Failure", Toast.LENGTH_LONG).show();
-        }
-    }
+            while (it.hasNext()) {
+                String key = it.next();
+                JSONObject data = allData.getJSONObject(key);
+                JSONObject dataObj = data.getJSONObject("data");
+                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                itemsToSync.add(item);
+            }
 
-    @Override
-    public void onSyncStarted(NotificationMessage notificationMessage) {
+            adapter.removeMissingItemsFrom(itemsToSync);
+            adapter.addNewItemsFrom(itemsToSync);
 
-    }
-
-
-    @Override
-    public void onUpdateOffline(NotificationMessage notificationMessage) {
-
-    }
-
-    @Override
-    public void onCollisionDetected(NotificationMessage notificationMessage) {
-
-    }
-
-    @Override
-    public void onRemoteUpdateFailed(NotificationMessage notificationMessage) {
-
-    }
-
-    @Override
-    public void onRemoteUpdateApplied(NotificationMessage notificationMessage) {
-
-    }
-
-    @Override
-    //On sync complete, list all the data and update the adapter
-    public void onSyncCompleted(NotificationMessage pMessage) {
-        Log.d(TAG, "syncClient - onSyncCompleted");
-        Log.d(TAG, "Sync message: " + pMessage.getMessage());
-
-        JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
-        if (allData.length() > 0) {
-            emptyView.setVisibility(View.GONE);
-            artCardsList.setVisibility(View.VISIBLE);
-        } else {
-            emptyView.setVisibility(View.VISIBLE);
-            artCardsList.setVisibility(View.GONE);
-            return;
-        }
-        Iterator<String> it = allData.keys();
-        TreeSet<Project> itemsToSync = new TreeSet<Project>();
-
-        while (it.hasNext()) {
-            String key = it.next();
-            JSONObject data = allData.getJSONObject(key);
-            JSONObject dataObj = data.getJSONObject("data");
-            Project item = new Gson().fromJson(dataObj.toString(), Project.class);
-            itemsToSync.add(item);
+            adapter.notifyDataSetChanged();
         }
 
-        adapter.removeMissingItemsFrom(itemsToSync);
-        adapter.addNewItemsFrom(itemsToSync);
+        @Override
+        public void onLocalUpdateApplied(NotificationMessage pMessage) {
+            Log.d(TAG, "syncClient - onLocalUpdateApplied");
 
-        adapter.notifyDataSetChanged();
-    }
+            JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
+            Iterator<String> it = allData.keys();
+            if (allData.length() > 0) {
+                emptyView.setVisibility(View.GONE);
+                artCardsList.setVisibility(View.VISIBLE);
+            } else {
+                emptyView.setVisibility(View.VISIBLE);
+                artCardsList.setVisibility(View.GONE);
+                return;
+            }
+            TreeSet<Project> itemsToSync = new TreeSet<Project>();
 
-    @Override
-    public void onLocalUpdateApplied(NotificationMessage pMessage) {
-        Log.d(TAG, "syncClient - onLocalUpdateApplied");
+            while (it.hasNext()) {
+                String key = it.next();
+                JSONObject data = allData.getJSONObject(key);
+                JSONObject dataObj = data.getJSONObject("data");
+                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                itemsToSync.add(item);
+            }
 
-        JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
-        Iterator<String> it = allData.keys();
-        if (allData.length() > 0) {
-            emptyView.setVisibility(View.GONE);
-            artCardsList.setVisibility(View.VISIBLE);
-        } else {
-            emptyView.setVisibility(View.VISIBLE);
-            artCardsList.setVisibility(View.GONE);
-            return;
+            adapter.removeMissingItemsFrom(itemsToSync);
+            adapter.addNewItemsFrom(itemsToSync);
+
+            adapter.notifyDataSetChanged();
         }
-        TreeSet<Project> itemsToSync = new TreeSet<Project>();
-
-        while (it.hasNext()) {
-            String key = it.next();
-            JSONObject data = allData.getJSONObject(key);
-            JSONObject dataObj = data.getJSONObject("data");
-            Project item = new Gson().fromJson(dataObj.toString(), Project.class);
-            itemsToSync.add(item);
-        }
-
-        adapter.removeMissingItemsFrom(itemsToSync);
-        adapter.addNewItemsFrom(itemsToSync);
-
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onDeltaReceived(NotificationMessage notificationMessage) {
 
     }
 
-    @Override
-    public void onSyncFailed(NotificationMessage notificationMessage) {
-
-    }
-
-    @Override
-    public void onClientStorageFailed(NotificationMessage notificationMessage) {
-
-    }
 }

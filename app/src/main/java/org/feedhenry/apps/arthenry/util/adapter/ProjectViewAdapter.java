@@ -51,9 +51,6 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
         Picasso.with(appContext).load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
         holder.title.setText(mostRecentCommit.getOwnerId());
         holder.firstDetail.setText(mostRecentCommit.getComments().get(0).getComment());
-
-
-
     }
 
     public synchronized Project getProject(int position) {

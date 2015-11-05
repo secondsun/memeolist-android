@@ -8,63 +8,80 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
-import com.feedhenry.sdk.FHResponse;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
+import org.feedhenry.apps.arthenry.events.InitSuccessful;
+import org.feedhenry.apps.arthenry.events.InitFailed;
 import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
 import org.feedhenry.apps.arthenry.fh.FHClient;
-import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
-import org.feedhenry.apps.arthenry.util.InitCallbackListener;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class SplashScreen extends AppCompatActivity implements InitCallbackListener {
+public class SplashScreen extends AppCompatActivity {
 
     private static final int SIGN_IN = 0xdeadbeef;
+
     @Bind(R.id.progress_bar) ProgressBar progress;
     @Bind(R.id.login_button) Button logInButton;
-    private FHClient fhClient;
+
+    @Inject
+    FHClient fhClient;
+    @Inject
+    Bus bus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spash_screen);
         ButterKnife.bind(this);
-
-        initFeedHenry();
-
-    }
-
-    private void initFeedHenry() {
-        this.fhClient = new FHClient.Builder(this)
-                .addInitCallback(this)
-                .addFeature(new FHAuthClientConfig("Google")
-                        .setCallingActivity(this))
-                .build();
+        initInjection();
 
     }
+
+    private void initInjection() {
+        ((ArtHenryApplication)getApplicationContext()).getObjectGraph().inject(this);
+    }
+
 
     @Override
     protected void onStart() {
         super.onStart();
-        fhClient.connect();
+        if (!fhClient.isConnected()) {
+            fhClient.connect();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        bus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        bus.unregister(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        fhClient.disconnect();
     }
 
-    @Override
-    public void onInit(FHResponse fhResponse) {
+    @Subscribe
+    public void onInit(InitSuccessful event) {
         startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 
-    @Override
-    public void onInitError(final ConnectionFailure failure) {
+    @Subscribe
+    public void onInitError(final InitFailed event) {
+        final ConnectionFailure failure = event.getConnectionFailure();
         if (failure.getResponseCode() == FHAuthUtil.SIGN_IN_REQUIRED) {
             progress.setVisibility(View.GONE);
             logInButton.setVisibility(View.VISIBLE);
