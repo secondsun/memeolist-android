@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import org.feedhenry.apps.arthenry.R;
@@ -29,6 +30,7 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
 
     private List<Project> items = new ArrayList<>();
     private final Context appContext;
+    private Picasso picasso;
 
     public ProjectViewAdapter(Context appContext) {
         this.appContext = appContext.getApplicationContext();
@@ -48,7 +50,7 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
         Project project = getProject(position);
         Commit mostRecentCommit = project.getCommits().get(project.getCommits().size() - 1);
         holder.item = project;
-        Picasso.with(appContext).load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
+        picasso.load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
         holder.title.setText(mostRecentCommit.getOwnerId());
         holder.firstDetail.setText(mostRecentCommit.getComments().get(0).getComment());
     }
@@ -91,6 +93,10 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
     public synchronized void removeMissingItemsFrom(Set<Project> itemsToSync) {
         items.retainAll(itemsToSync);
         Collections.sort(items);
+    }
+
+    public void setPicasso(Picasso picasso) {
+        this.picasso = picasso;
     }
 
     public class ProjectViewHolder extends RecyclerView.ViewHolder {

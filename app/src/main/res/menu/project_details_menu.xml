@@ -3,12 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/add_image_menu_item"
-        android:icon="@drawable/ic_add_white_24dp"
-        android:title="@string/add_image_menu_title"
-        app:showAsAction="ifRoom"
-        />
-    <item
         android:id="@+id/share_project_menu_item"
         android:icon="@drawable/ic_share_white_24dp"
         android:title="@string/share_project_menu_title"

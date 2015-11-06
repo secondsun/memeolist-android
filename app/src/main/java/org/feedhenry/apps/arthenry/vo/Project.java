@@ -9,27 +9,29 @@ import com.google.gson.Gson;
 import org.json.fh.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by summers on 11/3/15.
  */
 public class Project implements Comparable<Project>,Parcelable {
 
-    private String _id;
+    private String id;
     private String ownerId;
-    private Date createdOn = new Date();
-    private Date updatedOn = new Date();
+    private Date createdOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
+    private Date updatedOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
 
     private ArrayList<String> sharedWith = new ArrayList<>();
     private ArrayList<Commit> commits = new ArrayList<>();
 
-    public String get_id() {
-        return _id;
+    public String getId() {
+        return id;
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getOwnerId() {
@@ -70,7 +72,7 @@ public class Project implements Comparable<Project>,Parcelable {
 
     @Override
     public int compareTo(Project another) {
-        return createdOn.compareTo(another.createdOn);
+        return another.createdOn.compareTo(createdOn);
     }
 
     @Override
@@ -80,7 +82,6 @@ public class Project implements Comparable<Project>,Parcelable {
 
         Project project = (Project) o;
 
-        if (_id != null ? !_id.equals(project._id) : project._id != null) return false;
         if (ownerId != null ? !ownerId.equals(project.ownerId) : project.ownerId != null)
             return false;
         if (createdOn != null ? !createdOn.equals(project.createdOn) : project.createdOn != null)
@@ -95,8 +96,7 @@ public class Project implements Comparable<Project>,Parcelable {
 
     @Override
     public int hashCode() {
-        int result = _id != null ? _id.hashCode() : 0;
-        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
+        int result =  (ownerId != null ? ownerId.hashCode() : 0);
         result = 31 * result + (createdOn != null ? createdOn.hashCode() : 0);
         result = 31 * result + (updatedOn != null ? updatedOn.hashCode() : 0);
         result = 31 * result + (sharedWith != null ? sharedWith.hashCode() : 0);
@@ -125,7 +125,7 @@ public class Project implements Comparable<Project>,Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this._id);
+        dest.writeString(this.id);
         dest.writeString(this.ownerId);
         dest.writeLong(createdOn != null ? createdOn.getTime() : -1);
         dest.writeLong(updatedOn != null ? updatedOn.getTime() : -1);
@@ -137,7 +137,7 @@ public class Project implements Comparable<Project>,Parcelable {
     }
 
     protected Project(Parcel in) {
-        this._id = in.readString();
+        this.id = in.readString();
         this.ownerId = in.readString();
         long tmpCreatedOn = in.readLong();
         this.createdOn = tmpCreatedOn == -1 ? null : new Date(tmpCreatedOn);

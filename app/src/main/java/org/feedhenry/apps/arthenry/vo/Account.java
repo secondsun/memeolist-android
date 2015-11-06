@@ -101,4 +101,7 @@ public class Account {
         return result;
     }
 
+    public String getName() {
+        return String.format("%s %s", given_name, family_name);
+    }
 }

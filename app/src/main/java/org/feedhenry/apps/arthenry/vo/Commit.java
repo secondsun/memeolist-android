@@ -10,7 +10,9 @@ import org.json.fh.JSONObject;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by summers on 11/3/15.
@@ -18,8 +20,8 @@ import java.util.Date;
 public class Commit implements Comparable<Commit>,Parcelable {
 
     private String ownerId;
-    private Date createdOn = new Date();
-    private Date updatedOn = new Date();
+    private Date createdOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
+    private Date updatedOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
     private URL photoUrl;
     private ArrayList<Comment> comments = new ArrayList<>();
 

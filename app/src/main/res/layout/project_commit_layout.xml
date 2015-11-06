@@ -16,6 +16,12 @@
 
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/comment_field"
+        android:layout_width="match_parent"
+        android:hint="Add a Comment"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/add_comment"
         android:text="@string/add_comment_button"

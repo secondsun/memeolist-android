@@ -1,40 +1,29 @@
 package org.feedhenry.apps.arthenry;
 
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Toast;
 
-import com.feedhenry.sdk.FHResponse;
-import com.feedhenry.sdk.sync.FHSyncListener;
-import com.feedhenry.sdk.sync.NotificationMessage;
-import com.google.gson.Gson;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+import com.squareup.picasso.Picasso;
 
-import org.feedhenry.apps.arthenry.fh.ConnectionFailure;
-import org.feedhenry.apps.arthenry.fh.FHClient;
-import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
-import org.feedhenry.apps.arthenry.fh.sync.AbstractSyncListener;
-import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
-import org.feedhenry.apps.arthenry.fh.sync.InjectableSyncListener;
-import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
-import org.feedhenry.apps.arthenry.util.RecyclerItemClickListener;
-import org.feedhenry.apps.arthenry.util.SwipeTouchHelper;
+import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
+import org.feedhenry.apps.arthenry.util.ImagePickerUtil;
+import org.feedhenry.apps.arthenry.view.CreateProjectDialog;
+import org.feedhenry.apps.arthenry.view.MainFragment;
 import org.feedhenry.apps.arthenry.view.ProjectDetailDialog;
-import org.feedhenry.apps.arthenry.vo.Comment;
-import org.feedhenry.apps.arthenry.vo.Commit;
 import org.feedhenry.apps.arthenry.vo.Project;
-import org.json.fh.JSONObject;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -44,25 +33,28 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String DATA_ID = "photos";
+    private static final int PICK_IMAGE_ID = 0x5309;
+    public static final int MY_PERMISSIONS_REQUEST_READ_STORAGE = 0x42;
+    private static final String IS_TABLET = "MainActivity.IS_TABLET";
+
+    private boolean isTablet = false;
 
 
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-    @Bind(R.id.fab)
-    FloatingActionButton fab;
-    @Bind(R.id.empty)
-    View emptyView;
+    @Nullable
+    @Bind(R.id.wide)
+    View wide;
 
-    @Bind(R.id.art_cards_list)
-    RecyclerView artCardsList;
-    private ProjectViewAdapter adapter;
+    @Nullable @Bind(R.id.narrow)
+    View narrow;
+
+
+
 
     @Inject
-    InjectableSyncListener listener;
+    Bus bus;
+
     @Inject
-    FHClient fhClient;
+    Picasso picasso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,149 +62,121 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-        ((ArtHenryApplication)getApplicationContext()).getObjectGraph().inject(this);
+        ((ArtHenryApplication) getApplicationContext()).getObjectGraph().inject(this);
 
-        setSupportActionBar(toolbar);
-        adapter = new ProjectViewAdapter(getApplicationContext());
+        isTablet = wide != null;//if wide the is tablet, if not then not tablet
 
         setupView();
 
     }
 
     private void setupView() {
-        artCardsList.setLayoutManager(new GridLayoutManager(this, 3));
-        artCardsList.setAdapter(adapter);
-        artCardsList.addOnItemTouchListener(new RecyclerItemClickListener(
-                getApplicationContext(),
-                new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        showPopup(adapter.getProject(position));
-                    }
-                }
-        ));
-
-        SwipeTouchHelper callback = new SwipeTouchHelper(new SwipeTouchHelper.OnItemSwipeListener() {
-            @Override
-            public void onItemSwipe(Project item) {
-
-            }
-        });
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
-        itemTouchHelper.attachToRecyclerView(artCardsList);
+        FragmentTransaction tx = getFragmentManager().beginTransaction();
+        tx.add(R.id.fragment_container, MainFragment.newInstance(isTablet));
+        tx.addToBackStack(null);
+        tx.commit();
     }
 
-    private void showPopup(Project project) {
-        ProjectDetailDialog.newInstance(project).show(getFragmentManager(), "DETAIL");
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (!isTablet && keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            if (getFragmentManager().getBackStackEntryCount() == 0)
+            {
+                this.finish();
+                return false;
+            }
+            else
+            {
+                getFragmentManager().popBackStack();
+
+                return false;
+            }
+
+
+
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+
+    public void showPopup(Project project) {
+
+        DialogFragment dialog = ProjectDetailDialog.newInstance(project);
+        if (isTablet) {
+            dialog.show(getFragmentManager(), "DETAIL");
+        }
+        else {
+            FragmentTransaction tx = getFragmentManager().beginTransaction();
+            tx.replace(R.id.fragment_container, dialog, "DETAIL");
+            tx.addToBackStack(null);
+            tx.commit();
+        }
     }
 
     @OnClick(R.id.fab)
     public void fabClick(View view) {
-
-        String accountId = fhClient.getAccount().getId();
-
-        Comment firstComment = new Comment();
-        firstComment.setOwnerId(accountId);
-        firstComment.setComment("This is a default comment for testing");
-
-        Commit firstCommit = new Commit();
-        firstCommit.setOwnerId(accountId);
-        firstCommit.getComments().add(firstComment);
-        try {
-            firstCommit.setPhotoUrl(new URL("https://drive.google.com/uc?id=1voMxLt_1ZgvvveImHofWTPWq3ZfoCWSc5A"));
-        } catch (MalformedURLException ignore) {
-        }
-
-        Project project = new Project();
-
-        project.setOwnerId(accountId);
-        project.getCommits().add(firstCommit);
-
-        JSONObject projectJson = new JSONObject(new Gson().toJson(project));
-        try {
-            fhClient.getSyncClient().create(DATA_ID, projectJson);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        Intent chooseImageIntent = ImagePickerUtil.getPickImageIntent(this);
+        startActivityForResult(chooseImageIntent, PICK_IMAGE_ID);
 
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        listener.attachListener(new SyncHandler());
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case PICK_IMAGE_ID:
+
+                Uri uri = ImagePickerUtil.getImageUriFromResult(this, resultCode, data);
+                if (uri != null) {
+                    DialogFragment dialog = CreateProjectDialog.newInstance(uri);
+                    if (isTablet) {
+                        dialog.show(getFragmentManager(), "CREATE");
+                    }
+                    else {
+                        FragmentTransaction tx = getFragmentManager().beginTransaction();
+                        tx.replace(R.id.fragment_container, dialog, "CREATE");
+                        tx.addToBackStack(null);
+                        tx.commit();
+                    }
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+
+
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        listener.detachListener();
-    }
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_STORAGE: {
 
-    private class SyncHandler extends AbstractSyncListener {
-        @Override
-        //On sync complete, list all the data and update the adapter
-        public void onSyncCompleted(NotificationMessage pMessage) {
-            Log.d(TAG, "syncClient - onSyncCompleted");
-            Log.d(TAG, "Sync message: " + pMessage.getMessage());
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-            JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
-            if (allData.length() > 0) {
-                emptyView.setVisibility(View.GONE);
-                artCardsList.setVisibility(View.VISIBLE);
-            } else {
-                emptyView.setVisibility(View.VISIBLE);
-                artCardsList.setVisibility(View.GONE);
+                    ((CreateProjectDialog)getFragmentManager().findFragmentByTag("CREATE")).onResume();
+                } else {
+                    if (isTablet) {
+                        ((DialogFragment) getFragmentManager().findFragmentByTag("CREATE")).dismiss();
+                    } else {
+                        getFragmentManager().popBackStack();
+                    }
+
+                }
                 return;
             }
-            Iterator<String> it = allData.keys();
-            TreeSet<Project> itemsToSync = new TreeSet<Project>();
 
-            while (it.hasNext()) {
-                String key = it.next();
-                JSONObject data = allData.getJSONObject(key);
-                JSONObject dataObj = data.getJSONObject("data");
-                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
-                itemsToSync.add(item);
-            }
 
-            adapter.removeMissingItemsFrom(itemsToSync);
-            adapter.addNewItemsFrom(itemsToSync);
-
-            adapter.notifyDataSetChanged();
         }
-
-        @Override
-        public void onLocalUpdateApplied(NotificationMessage pMessage) {
-            Log.d(TAG, "syncClient - onLocalUpdateApplied");
-
-            JSONObject allData = fhClient.getSyncClient().list(DATA_ID);
-            Iterator<String> it = allData.keys();
-            if (allData.length() > 0) {
-                emptyView.setVisibility(View.GONE);
-                artCardsList.setVisibility(View.VISIBLE);
-            } else {
-                emptyView.setVisibility(View.VISIBLE);
-                artCardsList.setVisibility(View.GONE);
-                return;
-            }
-            TreeSet<Project> itemsToSync = new TreeSet<Project>();
-
-            while (it.hasNext()) {
-                String key = it.next();
-                JSONObject data = allData.getJSONObject(key);
-                JSONObject dataObj = data.getJSONObject("data");
-                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
-                itemsToSync.add(item);
-            }
-
-            adapter.removeMissingItemsFrom(itemsToSync);
-            adapter.addNewItemsFrom(itemsToSync);
-
-            adapter.notifyDataSetChanged();
-        }
-
     }
 
 }
+
+
+

@@ -9,10 +9,10 @@
     tools:context="org.feedhenry.apps.arthenry.MainActivity">
 
     <View
-        android:id="@+id/narrow"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:id="@+id/wide"/>
 
     <LinearLayout
         android:id="@+id/fragment_container"

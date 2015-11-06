@@ -2,7 +2,7 @@ package org.feedhenry.apps.arthenry.vo;
 
 import org.jboss.aerogear.android.core.RecordId;
 
-import java.io.File;
+import java.io.InputStream;
 
 /**
  * Created by summers on 11/5/15.
@@ -11,10 +11,10 @@ public class MemeRequest {
     @RecordId
     private String id = null;
 
-    private final String ownerId, topMessage, bottomMessage;
-    private final File image;
+    private String ownerId, topMessage, bottomMessage, fileNameResult;
+    private InputStream image;
 
-    private MemeRequest(String ownerId, String topMessage, String bottomMessage, File image) {
+    private MemeRequest(String ownerId, String topMessage, String bottomMessage, InputStream image) {
         this.ownerId = ownerId;
         this.topMessage = topMessage;
         this.bottomMessage = bottomMessage;
@@ -22,7 +22,7 @@ public class MemeRequest {
 
     }
 
-    public File getImage() {
+    public InputStream getImage() {
         return image;
     }
 
@@ -32,6 +32,18 @@ public class MemeRequest {
 
     public void setId(String id) {
         //noop
+    }
+
+    public void setImage(InputStream image) {
+        this.image = image;
+    }
+
+    public String getFileNameResult() {
+        return fileNameResult;
+    }
+
+    public void setFileNameResult(String fileNameResult) {
+        this.fileNameResult = fileNameResult;
     }
 
     public String getOwnerId() {
@@ -46,9 +58,21 @@ public class MemeRequest {
         return bottomMessage;
     }
 
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public void setTopMessage(String topMessage) {
+        this.topMessage = topMessage;
+    }
+
+    public void setBottomMessage(String bottomMessage) {
+        this.bottomMessage = bottomMessage;
+    }
+
     public static class Builder {
         private String ownerId, topMessage, bottomMessage;
-        private File image;
+        private InputStream image;
 
         public String getOwnerId() {
             return ownerId;
@@ -77,11 +101,11 @@ public class MemeRequest {
             return this;
         }
 
-        public File getImage() {
+        public InputStream getImage() {
             return image;
         }
 
-        public Builder setImage(File image) {
+        public Builder setImage(InputStream image) {
             this.image = image;
             return this;
         }

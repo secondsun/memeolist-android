@@ -1,7 +1,9 @@
 package org.feedhenry.apps.arthenry.view;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,9 +16,16 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Toast;
 
+import com.squareup.otto.Bus;
+import com.squareup.picasso.Picasso;
+
+import org.feedhenry.apps.arthenry.ArtHenryApplication;
 import org.feedhenry.apps.arthenry.R;
+import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.util.adapter.CommitsDetailAdapter;
 import org.feedhenry.apps.arthenry.vo.Project;
+
+import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -34,7 +43,17 @@ public class ProjectDetailDialog extends DialogFragment {
     @Bind(R.id.commits_list)
     RecyclerView commits;
 
+    @Inject
+    Picasso picasso;
+
+    @Inject
+    FHClient fhClient;
+
+    @Inject
+    Bus bus;
+
     private Project project;
+    private CommitsDetailAdapter adapter;
 
     public static ProjectDetailDialog newInstance(Project project) {
         
@@ -46,6 +65,12 @@ public class ProjectDetailDialog extends DialogFragment {
         return dialog;
     }
 
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((ArtHenryApplication)activity.getApplicationContext()).getObjectGraph().inject(this);
+    }
 
     @Nullable
     @Override
@@ -65,9 +90,23 @@ public class ProjectDetailDialog extends DialogFragment {
         setupCommitsList();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        bus.register(adapter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        bus.unregister(adapter);
+    }
+
     private void setupCommitsList() {
         commits.setLayoutManager(new LinearLayoutManager(getActivity()));
-        commits.setAdapter(new CommitsDetailAdapter(project.getCommits(), getActivity()));
+        this.adapter = new CommitsDetailAdapter(project.getCommits(), getActivity(), fhClient.getAccount(), project, fhClient);
+        adapter.setPicasso(picasso);
+        commits.setAdapter(adapter);
 
     }
 
@@ -85,8 +124,11 @@ public class ProjectDetailDialog extends DialogFragment {
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                // Handle the menu item
-                Toast.makeText(getActivity(), item.getTitle(), Toast.LENGTH_LONG).show();
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, project.getCommits().get(0).getPhotoUrl());
+                shareIntent.setType("image/jpeg");
+                startActivity(Intent.createChooser(shareIntent, "Share Meme To "));
                 return true;
             }
         });

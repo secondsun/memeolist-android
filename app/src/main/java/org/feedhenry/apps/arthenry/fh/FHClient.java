@@ -1,6 +1,8 @@
 package org.feedhenry.apps.arthenry.fh;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.feedhenry.sdk.FH;
@@ -19,16 +21,24 @@ import com.squareup.otto.Produce;
 
 import org.feedhenry.apps.arthenry.events.InitFailed;
 import org.feedhenry.apps.arthenry.events.InitSuccessful;
+import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
 import org.feedhenry.apps.arthenry.vo.Account;
+import org.feedhenry.apps.arthenry.vo.Project;
 import org.json.fh.JSONObject;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
 public class FHClient {
 
+    private static final String TAG = FHClient.class.getSimpleName();
     private Context appContext;
     private FHSyncListener syncListener;
     private FHSyncClient syncClient;
@@ -74,6 +84,43 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
+    }
+
+    public void refreshMemes() {
+        try {
+            FH.cloud("/meme/refresh", "GET", null, null, new FHActCallback() {
+                @Override
+                public void success(FHResponse fhResponse) {
+                    JSONObject allData = fhResponse.getJson();
+
+
+                     org.json.fh.JSONArray it = allData.getJSONArray("list");
+                    final List<Project> itemsToSync = new ArrayList<>();
+
+                    for (int i = 0; i < it.length(); i++) {
+
+                        JSONObject dataObj = it.getJSONObject(i).getJSONObject("fields");
+
+                        Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                        itemsToSync.add(item);
+                    }
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            bus.post(new ProjectsAvailable(itemsToSync));
+                        }
+                    });
+
+                }
+
+                @Override
+                public void fail(FHResponse fhResponse) {
+
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+        }
     }
 
     private void performAuthThenSync(final FHResponse fhResponse) {
@@ -235,6 +282,16 @@ public class FHClient {
 
     public FHSyncClient getSyncClient() {
         return syncClient;
+    }
+
+    public URL getCloudUrl(String path) {
+        try {
+            return new URL(FH.getCloudHost() + path);
+        } catch (MalformedURLException | FHNotReadyException e) {
+            Log.e(TAG, e.getMessage(), e);
+            throw  new RuntimeException(e);
+        }
+
     }
 
     public static class Builder {

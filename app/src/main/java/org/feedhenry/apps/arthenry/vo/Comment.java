@@ -3,7 +3,9 @@ package org.feedhenry.apps.arthenry.vo;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by summers on 11/3/15.
@@ -11,8 +13,8 @@ import java.util.Date;
 public class Comment implements Comparable<Comment>, Parcelable {
 
     private String ownerId;
-    private Date createdOn = new Date();
-    private Date updatedOn = new Date();
+    private Date createdOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
+    private Date updatedOn = Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime();
     private String comment;
 
 
