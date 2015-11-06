@@ -84,6 +84,7 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
+        com.feedhenry.sdk.FHHttpClient.setTimeout(60000);
     }
 
     public void refreshMemes() {

@@ -1,6 +1,7 @@
 package org.feedhenry.apps.arthenry.view;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -21,6 +22,7 @@ import org.feedhenry.apps.arthenry.ArtHenryApplication;
 import org.feedhenry.apps.arthenry.MainActivity;
 import org.feedhenry.apps.arthenry.R;
 import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
+import org.feedhenry.apps.arthenry.util.ImagePickerUtil;
 import org.feedhenry.apps.arthenry.util.RecyclerItemClickListener;
 import org.feedhenry.apps.arthenry.util.SwipeTouchHelper;
 import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
@@ -33,6 +35,7 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by summers on 11/6/15.
@@ -48,8 +51,6 @@ public class MainFragment extends Fragment {
 
     @Bind(R.id.toolbar)
     Toolbar toolbar;
-    @Bind(R.id.fab)
-    FloatingActionButton fab;
 
     @Bind(R.id.art_cards_list)
     RecyclerView artCardsList;
@@ -97,7 +98,7 @@ public class MainFragment extends Fragment {
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-                        ((MainActivity)getActivity()).showPopup(adapter.getProject(position));
+                        ((MainActivity) getActivity()).showPopup(adapter.getProject(position));
                     }
                 }
         ));
@@ -144,6 +145,7 @@ public class MainFragment extends Fragment {
 
         adapter.notifyDataSetChanged();
     }
+
 
 
 }

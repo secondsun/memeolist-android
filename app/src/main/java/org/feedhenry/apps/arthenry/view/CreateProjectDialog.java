@@ -130,8 +130,11 @@ public class CreateProjectDialog extends DialogFragment {
 
         getActivity().startService(intent);
 
-        dismiss();
-        getFragmentManager().popBackStack();
+        if (((MainActivity)getActivity()).isTablet) {
+            dismiss();
+        } else {
+            getActivity().getFragmentManager().popBackStack();
+        }
     }
 
 }

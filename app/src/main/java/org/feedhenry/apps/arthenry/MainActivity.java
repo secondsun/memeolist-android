@@ -12,18 +12,13 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.squareup.otto.Bus;
-import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
-import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
 import org.feedhenry.apps.arthenry.util.ImagePickerUtil;
 import org.feedhenry.apps.arthenry.view.CreateProjectDialog;
 import org.feedhenry.apps.arthenry.view.MainFragment;
 import org.feedhenry.apps.arthenry.view.ProjectDetailDialog;
 import org.feedhenry.apps.arthenry.vo.Project;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -33,11 +28,11 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_ID = 0x5309;
+    public static final int PICK_IMAGE_ID = 0x5309;
     public static final int MY_PERMISSIONS_REQUEST_READ_STORAGE = 0x42;
     private static final String IS_TABLET = "MainActivity.IS_TABLET";
 
-    private boolean isTablet = false;
+    public boolean isTablet = false;
 
 
     @Nullable
@@ -116,13 +111,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @OnClick(R.id.fab)
-    public void fabClick(View view) {
-        Intent chooseImageIntent = ImagePickerUtil.getPickImageIntent(this);
-        startActivityForResult(chooseImageIntent, PICK_IMAGE_ID);
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
@@ -175,6 +163,16 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
+
+    @OnClick(R.id.fab)
+    public void fabClick(View view) {
+        Intent chooseImageIntent = ImagePickerUtil.getPickImageIntent(this);
+        startActivityForResult(chooseImageIntent, PICK_IMAGE_ID);
+
+    }
+
 
 }
 

@@ -6,6 +6,7 @@ import com.feedhenry.sdk.sync.FHSyncListener;
 import com.feedhenry.sdk.sync.NotificationMessage;
 import com.google.gson.Gson;
 import com.squareup.otto.Bus;
+import com.squareup.otto.Produce;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
@@ -49,7 +50,7 @@ public class ApplicationModule {
     public ApplicationModule(Context context) {
         this.context = context.getApplicationContext();
     }
-
+    private final List<Project> projects = new ArrayList<>();
     @Provides
     @Singleton
     public FHClient provideFHClient() {
@@ -76,7 +77,9 @@ public class ApplicationModule {
                         itemsToSync.add(item);
                     }
 
-                    bus.post(new ProjectsAvailable(itemsToSync));
+                    projects.clear();
+                    projects.addAll(itemsToSync);
+                    bus.post(new ProjectsAvailable(projects));
 
                 }
             }
@@ -100,7 +103,9 @@ public class ApplicationModule {
                         itemsToSync.add(item);
                     }
 
-                    bus.post(new ProjectsAvailable(itemsToSync));
+                    projects.clear();
+                    projects.addAll(itemsToSync);
+                    bus.post(new ProjectsAvailable(projects));
 
                 }
             }
@@ -112,12 +117,17 @@ public class ApplicationModule {
                         .setNotifySyncStarted(true)
                         .setAutoSyncLocalUpdates(true)
                         .setNotifySyncComplete(true)
-                        .setSyncFrequencySeconds(10))
+                        .setSyncFrequencySeconds(300))
                 .addFeature(new FHAuthClientConfig("Google"))
                 .build();
         clientRef.set(fhclient);;
 
         return fhclient;
+    }
+
+    @Produce
+    public ProjectsAvailable getProjectsAvailable() {
+        return new ProjectsAvailable(projects);
     }
 
     @Provides

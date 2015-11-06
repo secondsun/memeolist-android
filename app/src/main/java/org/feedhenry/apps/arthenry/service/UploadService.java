@@ -95,8 +95,8 @@ public class UploadService extends Service {
 
                     Uri fileName = extras.getParcelable(FILE_URI);
                     String ownerId = fhClient.getAccount().getId();
-                    String topMessage = extras.getString(TOP_MESSAGE);
-                    String bottomMessage = extras.getString(BOTTOM_MESSAGE);
+                    String topMessage = extras.getString(TOP_MESSAGE, "").toUpperCase();
+                    String bottomMessage = extras.getString(BOTTOM_MESSAGE, "").toUpperCase();
 
                     if (fileName == null) {
                         displayErrorNotification("No file provided", 0);

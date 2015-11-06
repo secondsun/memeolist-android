@@ -121,16 +121,6 @@ public class ProjectDetailDialog extends DialogFragment {
     private void setupToolbarMenu() {
         toolbar.inflateMenu(R.menu.project_details_menu);
 
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, project.getCommits().get(0).getPhotoUrl());
-                shareIntent.setType("image/jpeg");
-                startActivity(Intent.createChooser(shareIntent, "Share Meme To "));
-                return true;
-            }
-        });
+        Toast.makeText(getActivity(), "Sharing coming soon!", Toast.LENGTH_LONG).show();
     }
 }
