@@ -234,6 +234,7 @@ public class UploadService extends Service {
                     } catch (Exception ignore) {
                         Log.e(TAG, ignore.getMessage(), ignore);
                     } finally {
+                        fhClient.getSyncClient().forceSync("photos");
                         NotificationManager notificationManager =
                                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                         notificationManager.cancel(id);
@@ -241,6 +242,7 @@ public class UploadService extends Service {
                 }
             });
         } else {
+            fhClient.getSyncClient().forceSync("photos");
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.cancel(id);

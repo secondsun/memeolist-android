@@ -1,30 +1,32 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-
+    android:layout_gravity="center"
+    android:gravity="center"
     style="@style/MyTheme.Base"
     >
 
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_view"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="4dp"
-        android:layout_gravity="left"
+        android:layout_gravity="center"
         android:elevation="1dp"
         card_view:cardCornerRadius="1dp">
 
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_gravity="left"
-            android:gravity="left"
-            android:layout_height="match_parent">
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="300dp"
+                android:layout_height="wrap_content"
+                android:maxHeight="300dp"
                 android:layout_alignParentLeft="true"
                 android:id="@+id/art_thumb"
                 android:layout_margin="12dp"
@@ -34,9 +36,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
                 android:id="@+id/art_card_title"
-                android:layout_alignTop="@id/art_thumb"
-                android:layout_toRightOf="@+id/art_thumb"
+                android:layout_below="@+id/art_thumb"
                 android:text="@string/nothing_here"
                 android:textSize="@dimen/font_regular"
                 android:textStyle="bold" />
@@ -44,7 +46,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/art_thumb"
+                android:layout_marginLeft="12dp"
                 android:layout_below="@id/art_card_title"
                 android:id="@+id/art_card_first_detail"
                 android:text="@string/create_something"

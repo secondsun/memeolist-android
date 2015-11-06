@@ -18,6 +18,7 @@
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:orientation="vertical"
+        android:gravity="center"
         android:layout_height="match_parent"></LinearLayout>
 
     <android.support.design.widget.FloatingActionButton

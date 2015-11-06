@@ -1,10 +1,8 @@
 package org.feedhenry.apps.arthenry.view;
 
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,9 +20,8 @@ import org.feedhenry.apps.arthenry.ArtHenryApplication;
 import org.feedhenry.apps.arthenry.MainActivity;
 import org.feedhenry.apps.arthenry.R;
 import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
-import org.feedhenry.apps.arthenry.util.ImagePickerUtil;
+import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.util.RecyclerItemClickListener;
-import org.feedhenry.apps.arthenry.util.SwipeTouchHelper;
 import org.feedhenry.apps.arthenry.util.adapter.ProjectViewAdapter;
 import org.feedhenry.apps.arthenry.vo.Project;
 
@@ -35,7 +32,6 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by summers on 11/6/15.
@@ -56,6 +52,8 @@ public class MainFragment extends Fragment {
     RecyclerView artCardsList;
     private ProjectViewAdapter adapter;
 
+    @Inject
+    FHClient fhClient;
 
     @Inject
     Bus bus;
@@ -76,6 +74,7 @@ public class MainFragment extends Fragment {
         adapter = new ProjectViewAdapter(getActivity().getApplicationContext());
         adapter.setPicasso(picasso);
         this.isTablet = getArguments().getBoolean(IS_TABLET, false);
+        fhClient.refreshMemes();
         setupView();
 
         return view;
@@ -103,13 +102,17 @@ public class MainFragment extends Fragment {
                 }
         ));
 
-        SwipeTouchHelper callback = new SwipeTouchHelper(new SwipeTouchHelper.OnItemSwipeListener() {
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,0) {
             @Override
-            public void onItemSwipe(Project item) {
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
 
             }
         });
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(artCardsList);
     }
 

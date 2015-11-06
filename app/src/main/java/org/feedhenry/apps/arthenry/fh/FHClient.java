@@ -32,6 +32,7 @@ import org.json.fh.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
@@ -89,36 +90,7 @@ public class FHClient {
 
     public void refreshMemes() {
         try {
-            FH.cloud("/meme/refresh", "GET", null, null, new FHActCallback() {
-                @Override
-                public void success(FHResponse fhResponse) {
-                    JSONObject allData = fhResponse.getJson();
-
-
-                     org.json.fh.JSONArray it = allData.getJSONArray("list");
-                    final List<Project> itemsToSync = new ArrayList<>();
-
-                    for (int i = 0; i < it.length(); i++) {
-
-                        JSONObject dataObj = it.getJSONObject(i).getJSONObject("fields");
-
-                        Project item = new Gson().fromJson(dataObj.toString(), Project.class);
-                        itemsToSync.add(item);
-                    }
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            bus.post(new ProjectsAvailable(itemsToSync));
-                        }
-                    });
-
-                }
-
-                @Override
-                public void fail(FHResponse fhResponse) {
-
-                }
-            });
+           getSyncClient().forceSync("photos");
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
         }
@@ -163,7 +135,8 @@ public class FHClient {
 
                     @Override
                     public void handleError(FHResponse fhResponse) {
-                        postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));}
+                        postAuthenticationRequired(fhResponse, new AuthCompleteCallback(session));
+                    }
                 }, false);
 
 
@@ -172,6 +145,28 @@ public class FHClient {
             }
 
         }
+    }
+
+    @Produce
+    public ProjectsAvailable getProjectsAvailable() {
+        if (syncClient != null) {
+            JSONObject allData = syncClient.list("photos");
+
+            Iterator<String> it = allData.keys();
+            List<Project> itemsToSync = new ArrayList<>();
+
+            while (it.hasNext()) {
+                String key = it.next();
+                JSONObject data = allData.getJSONObject(key);
+                JSONObject dataObj = data.getJSONObject("data");
+                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                item.setId(key);
+                itemsToSync.add(item);
+            }
+
+            return new ProjectsAvailable(itemsToSync);
+        } else return null;
+
     }
 
     @Produce
@@ -290,7 +285,7 @@ public class FHClient {
             return new URL(FH.getCloudHost() + path);
         } catch (MalformedURLException | FHNotReadyException e) {
             Log.e(TAG, e.getMessage(), e);
-            throw  new RuntimeException(e);
+            throw new RuntimeException(e);
         }
 
     }
@@ -351,22 +346,22 @@ public class FHClient {
         }
 
         @Override
-            public void success(FHResponse fhAuthResponse) {
-                try {
-                    if (syncBuilder != null) {
-                        syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
-                    }
-                    Log.d("Connect", fhAuthResponse.getJson().toString());
-                    postCheckAccount(fhAuthResponse);
-                } catch (Exception e) {
-                    postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
+        public void success(FHResponse fhAuthResponse) {
+            try {
+                if (syncBuilder != null) {
+                    syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
                 }
+                Log.d("Connect", fhAuthResponse.getJson().toString());
+                postCheckAccount(fhAuthResponse);
+            } catch (Exception e) {
+                postConnectFailureRunner(new FHResponse(null, null, e, e.getMessage()));
             }
+        }
 
-            @Override
-            public void fail(FHResponse fhResponse) {
-                postConnectFailureRunner(fhResponse);
-            }
+        @Override
+        public void fail(FHResponse fhResponse) {
+            postConnectFailureRunner(fhResponse);
+        }
 
     }
 }

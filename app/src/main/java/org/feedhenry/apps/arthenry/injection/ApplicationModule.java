@@ -125,11 +125,6 @@ public class ApplicationModule {
         return fhclient;
     }
 
-    @Produce
-    public ProjectsAvailable getProjectsAvailable() {
-        return new ProjectsAvailable(projects);
-    }
-
     @Provides
     @Singleton
     public Bus getBus() {
