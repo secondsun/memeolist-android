@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -68,9 +69,11 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.main_fragment, null);
         ButterKnife.bind(this, view);
-        ((ArtHenryApplication) getActivity().getApplicationContext()).getObjectGraph().inject(this);
 
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((ArtHenryApplication) getActivity().getApplicationContext()).getObjectGraph().inject(this);
+        setupToolbarMenu();
+        //((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        toolbar.setTitle("Meme Henry");
         adapter = new ProjectViewAdapter(getActivity().getApplicationContext());
         adapter.setPicasso(picasso);
         this.isTablet = getArguments().getBoolean(IS_TABLET, false);
@@ -114,6 +117,7 @@ public class MainFragment extends Fragment {
             }
         });
         itemTouchHelper.attachToRecyclerView(artCardsList);
+
     }
 
 
@@ -149,6 +153,18 @@ public class MainFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
+
+    private void setupToolbarMenu() {
+        toolbar.inflateMenu(R.menu.main_menu);
+
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                fhClient.getSyncClient().forceSync("photos");
+                return true;
+            }
+        });
+    }
 
 
 }

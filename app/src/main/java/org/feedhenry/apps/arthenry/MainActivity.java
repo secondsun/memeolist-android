@@ -42,9 +42,6 @@ public class MainActivity extends AppCompatActivity {
     @Nullable @Bind(R.id.narrow)
     View narrow;
 
-
-
-
     @Inject
     Bus bus;
 
