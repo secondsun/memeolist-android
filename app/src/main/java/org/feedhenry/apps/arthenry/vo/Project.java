@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.feedhenry.sdk.sync.FHSyncUtils;
 import com.google.gson.Gson;
 
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.json.fh.JSONObject;
 
 import java.util.ArrayList;
@@ -106,7 +107,7 @@ public class Project implements Comparable<Project>,Parcelable {
 
 
     public long getFHhash() {
-        JSONObject create = new JSONObject(new Gson().toJson(this));
+        JSONObject create = new JSONObject(GsonUtil.GSON.toJson(this));
         create.remove("commits");
         try {
             return FHSyncUtils.generateHash(create.toString()).hashCode();

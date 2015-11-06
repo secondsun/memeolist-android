@@ -21,6 +21,7 @@ import com.squareup.picasso.Picasso;
 import org.feedhenry.apps.arthenry.R;
 import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
 import org.feedhenry.apps.arthenry.fh.FHClient;
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.feedhenry.apps.arthenry.vo.Account;
 import org.feedhenry.apps.arthenry.vo.Comment;
 import org.feedhenry.apps.arthenry.vo.Commit;
@@ -136,7 +137,7 @@ public class CommitsDetailAdapter extends RecyclerView.Adapter<CommitsDetailAdap
             firstComment.setComment(commentField.getText().toString());
             commit.getComments().add(firstComment);
 
-            JSONObject object = new JSONObject(new Gson().toJson(project));
+            JSONObject object = new JSONObject(GsonUtil.GSON.toJson(project));
             try {
                 fhClient.getSyncClient().update("photos", project.getId(), object);
             } catch (Exception e) {

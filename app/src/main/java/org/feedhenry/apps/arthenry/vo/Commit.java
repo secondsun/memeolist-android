@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import com.feedhenry.sdk.sync.FHSyncUtils;
 import com.google.gson.Gson;
 
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.json.fh.JSONObject;
 
 import java.net.URL;
@@ -135,7 +136,7 @@ public class Commit implements Comparable<Commit>,Parcelable {
     };
 
     public long getFHHashCode() {
-        JSONObject create = new JSONObject(new Gson().toJson(this));
+        JSONObject create = new JSONObject(GsonUtil.GSON.toJson(this));
         try {
             return FHSyncUtils.generateHash(create.toString()).hashCode();
         } catch (Exception e) {

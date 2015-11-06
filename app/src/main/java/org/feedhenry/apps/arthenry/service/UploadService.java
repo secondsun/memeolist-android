@@ -23,6 +23,7 @@ import org.feedhenry.apps.arthenry.R;
 import org.feedhenry.apps.arthenry.ag.FHAuthModule;
 import org.feedhenry.apps.arthenry.events.InitSuccessful;
 import org.feedhenry.apps.arthenry.fh.FHClient;
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.feedhenry.apps.arthenry.vo.Comment;
 import org.feedhenry.apps.arthenry.vo.Commit;
 import org.feedhenry.apps.arthenry.vo.MemeRequest;
@@ -222,14 +223,13 @@ public class UploadService extends Service {
                         project.setOwnerId(accountId);
                         project.getCommits().add(firstCommit);
 
-                        JSONObject projectJson = new JSONObject(new Gson().toJson(project));
+                        JSONObject projectJson = new JSONObject(GsonUtil.GSON.toJson(project));
                         try {
                             fhClient.getSyncClient().create("photos", projectJson);
                         } catch (Exception e) {
                             Log.e(TAG, e.getMessage(), e);
 
                         }
-
 
                     } catch (Exception ignore) {
                         Log.e(TAG, ignore.getMessage(), ignore);

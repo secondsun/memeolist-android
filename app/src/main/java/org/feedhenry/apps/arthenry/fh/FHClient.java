@@ -25,6 +25,7 @@ import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.auth.FHAuthUtil;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.feedhenry.apps.arthenry.vo.Account;
 import org.feedhenry.apps.arthenry.vo.Project;
 import org.json.fh.JSONObject;
@@ -113,7 +114,7 @@ public class FHClient {
                                 FH.cloud("/account/me", "GET", null, null, new FHActCallback() {
                                     @Override
                                     public void success(FHResponse fhResponse) {
-                                        setAccount(new Gson().fromJson(fhResponse.getJson().toString(), Account.class));
+                                        setAccount(GsonUtil.GSON.fromJson(fhResponse.getJson().toString(), Account.class));
                                         if (syncBuilder != null) {
                                             syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());
                                         }
@@ -159,7 +160,7 @@ public class FHClient {
                 String key = it.next();
                 JSONObject data = allData.getJSONObject(key);
                 JSONObject dataObj = data.getJSONObject("data");
-                Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                Project item = GsonUtil.GSON.fromJson(dataObj.toString(), Project.class);
                 item.setId(key);
                 itemsToSync.add(item);
             }
@@ -184,7 +185,7 @@ public class FHClient {
             FH.cloud("/account/login", "POST", new Header[0], fhResponse.getJson(), new FHActCallback() {
                 @Override
                 public void success(FHResponse fhResponse) {
-                    setAccount(new Gson().fromJson(fhResponse.getJson().toString(), Account.class));
+                    setAccount(GsonUtil.GSON.fromJson(fhResponse.getJson().toString(), Account.class));
                     setupSync(fhResponse);
 
                 }

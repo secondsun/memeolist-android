@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -17,32 +17,43 @@
 
     </android.support.v7.widget.Toolbar>
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:padding="@dimen/fab_margin"
-        android:scaleType="centerInside"
-        android:id="@+id/imageView" />
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/top_comment"
-        android:padding="@dimen/fab_margin"
-        android:hint="Top Comment"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/bottom_comment"
-        android:padding="@dimen/fab_margin"
-        android:hint="Bottom Comment"/>
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:padding="@dimen/fab_margin"
+                android:scaleType="centerInside" />
+
+            <EditText
+                android:id="@+id/top_comment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Top Comment"
+                android:padding="@dimen/fab_margin" />
+
+            <EditText
+                android:id="@+id/bottom_comment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Bottom Comment"
+                android:padding="@dimen/fab_margin" />
 
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/fab_margin"
-        android:text="Submit"
-        android:id="@+id/submit_button"/>
+            <Button
+                android:id="@+id/submit_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/fab_margin"
+                android:text="Submit" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

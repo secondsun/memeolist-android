@@ -19,6 +19,7 @@ import org.feedhenry.apps.arthenry.fh.auth.FHAuthClientConfig;
 import org.feedhenry.apps.arthenry.fh.sync.AbstractSyncListener;
 import org.feedhenry.apps.arthenry.fh.sync.FHSyncClientConfig;
 import org.feedhenry.apps.arthenry.service.UploadService;
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.feedhenry.apps.arthenry.util.adapter.PicassoDownloader;
 import org.feedhenry.apps.arthenry.view.CreateProjectDialog;
 import org.feedhenry.apps.arthenry.view.MainFragment;
@@ -74,7 +75,7 @@ public class ApplicationModule {
                         String key = it.next();
                         JSONObject data = allData.getJSONObject(key);
                         JSONObject dataObj = data.getJSONObject("data");
-                        Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                        Project item = GsonUtil.GSON.fromJson(dataObj.toString(), Project.class);
                         item.setId(key);
                         itemsToSync.add(item);
                     }
@@ -99,7 +100,7 @@ public class ApplicationModule {
                         String key = it.next();
                         JSONObject data = allData.getJSONObject(key);
                         JSONObject dataObj = data.getJSONObject("data");
-                        Project item = new Gson().fromJson(dataObj.toString(), Project.class);
+                        Project item = GsonUtil.GSON.fromJson(dataObj.toString(), Project.class);
                         item.setId(key);
                         itemsToSync.add(item);
                     }
