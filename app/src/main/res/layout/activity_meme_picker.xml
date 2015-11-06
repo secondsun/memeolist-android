@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.RecyclerView
+    android:id="@+id/images"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/accent"
+    android:clipToPadding="false"
+    android:drawSelectorOnTop="true"
+    android:horizontalSpacing="1dp"
+    android:numColumns="auto_fit"
+    android:padding="1dp"
+    android:scrollbarStyle="outsideOverlay"
+    android:stretchMode="columnWidth"
+    android:verticalSpacing="1dp"
+    tools:ignore="Overdraw"
+    tools:context=".Memeolist" />

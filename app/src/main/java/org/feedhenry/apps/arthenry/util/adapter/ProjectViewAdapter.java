@@ -2,6 +2,7 @@ package org.feedhenry.apps.arthenry.util.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import org.feedhenry.apps.arthenry.R;
+import org.feedhenry.apps.arthenry.util.GsonUtil;
 import org.feedhenry.apps.arthenry.vo.Commit;
 import org.feedhenry.apps.arthenry.vo.Project;
 
@@ -48,6 +50,9 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
     @Override
     public void onBindViewHolder(ProjectViewHolder holder, int position) {
         Project project = getProject(position);
+        if (project.getCommits().size() == 0) {
+            Log.e("No commits in project", GsonUtil.GSON.toJson(project));
+        }
         Commit mostRecentCommit = project.getCommits().get(project.getCommits().size() - 1);
         holder.item = project;
         picasso.load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);

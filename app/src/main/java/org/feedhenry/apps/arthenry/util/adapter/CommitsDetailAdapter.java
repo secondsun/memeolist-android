@@ -1,6 +1,7 @@
 package org.feedhenry.apps.arthenry.util.adapter;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,17 +44,20 @@ public class CommitsDetailAdapter extends RecyclerView.Adapter<CommitsDetailAdap
 
     private final ArrayList<Commit> commits;
     private final Context applicationContext;
+    private final RecyclerView view;
     private Picasso picasso;
     private final Account loggedInUser;
     private final Project project;
     private final FHClient fhClient;
+    private CommitsViewHolder holder;
 
-    public CommitsDetailAdapter(ArrayList<Commit> commits, Context context, Account loggedInUser, Project project, FHClient fhClient) {
+    public CommitsDetailAdapter(ArrayList<Commit> commits, Context context, Account loggedInUser, Project project, FHClient fhClient, RecyclerView recyclerView) {
         this.commits = commits;
         this.loggedInUser = loggedInUser;
         this.project = project;
         this.fhClient = fhClient;
         this.applicationContext = context.getApplicationContext();
+        this.view = recyclerView;
         super.setHasStableIds(true);
     }
 
@@ -70,8 +74,11 @@ public class CommitsDetailAdapter extends RecyclerView.Adapter<CommitsDetailAdap
         return new CommitsViewHolder(view);
     }
 
+
+
     @Override
     public void onBindViewHolder(CommitsViewHolder holder, int position) {
+        this.holder = holder;
         holder.commit = commits.get(position);
         holder.project = project;
         holder.position = position;
@@ -91,10 +98,26 @@ public class CommitsDetailAdapter extends RecyclerView.Adapter<CommitsDetailAdap
     public void memesAvailable(ProjectsAvailable event) {
         Set<Project> allData = new HashSet<>(event.getProjects());
         for (Project project : allData) {
-            if (this.project.getId().equals(project.getId())) {
+            if (this.project.getFHhash() == (project.getFHhash())) {
                 this.commits.clear();
                 this.commits.addAll(project.getCommits());
-                notifyDataSetChanged();
+                new AsyncTask<Object, Object, Object>() {
+                    @Override
+                    protected Object doInBackground(Object[] params) {
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Object o) {
+                        super.onPostExecute(o);
+                        if (holder != null) {
+                            holder.commentField.setText("");
+                        }
+                        view.setScrollY(view.getHeight());
+                        notifyDataSetChanged();
+
+                    }
+                }.execute((Object[]) null);
                 break;
             }
         }

@@ -18,6 +18,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import org.feedhenry.apps.arthenry.ImagePickerActivity;
 import org.feedhenry.apps.arthenry.R;
 
 import java.io.File;
@@ -37,11 +38,18 @@ public class ImagePickerUtil {
 
         Intent pickIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        Intent memePickIntent = new Intent(context, ImagePickerActivity.class);
+
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
         takePhotoIntent.putExtra("return-data", true);
         takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
+
         intentList = addIntentsToList(context, intentList, pickIntent);
+        intentList = addIntentsToList(context, intentList, memePickIntent);
         intentList = addIntentsToList(context, intentList, takePhotoIntent);
+
 
         if (intentList.size() > 0) {
             chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),

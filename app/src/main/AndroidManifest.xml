@@ -9,23 +9,32 @@
 
 
     <application
-        android:allowBackup="true"
+        android:name=".ArtHenryApplication"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/MyTheme.Base"
-        android:name=".ArtHenryApplication"
         tools:replace="android:icon">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name">
             <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
+            <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
         </activity>
         <activity android:name="com.feedhenry.sdk.oauth.FHOAuthIntent" />
+        <activity
+            android:name=".ImagePickerActivity"
+            android:icon="@mipmap/ic_launcher"
+            android:theme="@style/MyTheme.Base"
+            android:label="@string/meme_list_label">
+            <intent-filter>
+                <action android:name="com.fh.ImagePickerActivity" />
+            </intent-filter>
+        </activity>
         <activity android:name=".SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +42,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".service.UploadService"/>
+
+        <service android:name=".service.UploadService" />
+
     </application>
 
 </manifest>

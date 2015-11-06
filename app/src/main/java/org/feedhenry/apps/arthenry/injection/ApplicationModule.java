@@ -11,6 +11,7 @@ import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import org.feedhenry.apps.arthenry.ArtHenryApplication;
+import org.feedhenry.apps.arthenry.ImagePickerActivity;
 import org.feedhenry.apps.arthenry.MainActivity;
 import org.feedhenry.apps.arthenry.SplashScreen;
 import org.feedhenry.apps.arthenry.events.ProjectsAvailable;
@@ -41,7 +42,7 @@ import dagger.Provides;
 
 @Module(
         injects = {
-                ArtHenryApplication.class, MainActivity.class, SplashScreen.class, UploadService.class, CreateProjectDialog.class, ProjectDetailDialog.class, MainFragment.class
+                ArtHenryApplication.class, MainActivity.class, SplashScreen.class, UploadService.class, CreateProjectDialog.class, ProjectDetailDialog.class, MainFragment.class, ImagePickerActivity.class
         }
 )
 public class ApplicationModule {
@@ -50,17 +51,20 @@ public class ApplicationModule {
 
     private final Bus bus = new Bus();
     private PicassoDownloader downloader;
+
     public ApplicationModule(Context context) {
         this.context = context.getApplicationContext();
     }
+
     private final static Set<Project> projects = new TreeSet<>();
+
     @Provides
     @Singleton
     public FHClient provideFHClient() {
 
         final AtomicReference<FHClient> clientRef = new AtomicReference<>();
 
-        final FHSyncListener syncListener =  new AbstractSyncListener() {
+        final FHSyncListener syncListener = new AbstractSyncListener() {
             @Override
             public void onSyncCompleted(NotificationMessage notificationMessage) {
                 FHClient fhClient = clientRef.get();
@@ -121,7 +125,8 @@ public class ApplicationModule {
                         .setSyncFrequencySeconds(300))
                 .addFeature(new FHAuthClientConfig("Google"))
                 .build();
-        clientRef.set(fhclient);;
+        clientRef.set(fhclient);
+        ;
 
         return fhclient;
     }
@@ -136,6 +141,8 @@ public class ApplicationModule {
     @Singleton
     public Picasso getPicasso() {
         return new Picasso.Builder(context).downloader(new OkHttpDownloader(PicassoDownloader.picassoClient)).build();
-    };
+    }
+
+    ;
 
 }

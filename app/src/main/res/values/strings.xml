@@ -27,4 +27,5 @@
     <string name="share_project_menu_title">Share</string>
     <string name="pick_image_intent_text">Pick Image Source</string>
     <string name="refresh">Refresh</string>
+    <string name="meme_list_label">Meme List</string>
 </resources>

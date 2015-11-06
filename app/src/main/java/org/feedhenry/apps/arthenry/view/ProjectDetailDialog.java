@@ -122,9 +122,10 @@ public class ProjectDetailDialog extends DialogFragment {
 
     private void setupCommitsList() {
         commits.setLayoutManager(new LinearLayoutManager(getActivity()));
-        this.adapter = new CommitsDetailAdapter(project.getCommits(), getActivity(), fhClient.getAccount(), project, fhClient);
+        this.adapter = new CommitsDetailAdapter(project.getCommits(), getActivity(), fhClient.getAccount(), project, fhClient, commits);
         adapter.setPicasso(picasso);
         commits.setAdapter(adapter);
+
 
     }
 
