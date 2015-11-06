@@ -13,10 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import org.feedhenry.apps.arthenry.R;
@@ -156,7 +153,7 @@ public class CommitsDetailAdapter extends RecyclerView.Adapter<CommitsDetailAdap
         @OnClick(R.id.add_comment)
         public void addComment(View view) {
             Comment firstComment = new Comment();
-            firstComment.setOwnerId(loggedInUser.getName());
+            firstComment.setOwnerId(loggedInUser.getDisplayName());
             firstComment.setComment(commentField.getText().toString());
             commit.getComments().add(firstComment);
 

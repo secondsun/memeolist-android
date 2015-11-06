@@ -101,7 +101,22 @@ public class Account {
         return result;
     }
 
-    public String getName() {
-        return String.format("%s %s", given_name, family_name);
+    public String getDisplayName() {
+        String testName = String.format("%s %s", given_name, family_name);
+        if (testName.trim().isEmpty()) {
+            testName = getEmail();
+        }
+
+        if (testName.trim().isEmpty()) {
+            testName = getId();
+        }
+
+        if (testName.trim().isEmpty()) {
+            testName = "Nameless Wonder";
+        }
+
+        return testName;
+
+
     }
 }

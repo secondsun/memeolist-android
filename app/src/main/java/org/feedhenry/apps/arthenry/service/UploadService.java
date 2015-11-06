@@ -14,7 +14,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
@@ -41,7 +40,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -199,7 +197,7 @@ public class UploadService extends Service {
                 public void run() {
                     try {
 
-                        String accountId = fhClient.getAccount().getName();
+                        String accountId = fhClient.getAccount().getDisplayName();
                         TimeZone tz = TimeZone.getTimeZone("GMT");
                         Calendar calendar = Calendar.getInstance(tz);
                         Comment firstComment = new Comment();
