@@ -29,6 +29,8 @@ import org.json.fh.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Singleton;
@@ -50,7 +52,7 @@ public class ApplicationModule {
     public ApplicationModule(Context context) {
         this.context = context.getApplicationContext();
     }
-    private final static List<Project> projects = new ArrayList<>();
+    private final static Set<Project> projects = new TreeSet<>();
     @Provides
     @Singleton
     public FHClient provideFHClient() {
@@ -77,9 +79,8 @@ public class ApplicationModule {
                         itemsToSync.add(item);
                     }
 
-                    projects.clear();
                     projects.addAll(itemsToSync);
-                    bus.post(new ProjectsAvailable(projects));
+                    bus.post(new ProjectsAvailable(new ArrayList<Project>(projects)));
 
                 }
             }
@@ -103,9 +104,8 @@ public class ApplicationModule {
                         itemsToSync.add(item);
                     }
 
-                    projects.clear();
                     projects.addAll(itemsToSync);
-                    bus.post(new ProjectsAvailable(projects));
+                    bus.post(new ProjectsAvailable(new ArrayList<Project>(projects)));
 
                 }
             }
