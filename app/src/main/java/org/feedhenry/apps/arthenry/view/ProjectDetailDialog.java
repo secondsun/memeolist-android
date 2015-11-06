@@ -3,12 +3,17 @@ package org.feedhenry.apps.arthenry.view;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,7 +21,12 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Toast;
 
+import com.feedhenry.sdk.FH;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.squareup.otto.Bus;
+import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import org.feedhenry.apps.arthenry.ArtHenryApplication;
@@ -25,10 +35,18 @@ import org.feedhenry.apps.arthenry.fh.FHClient;
 import org.feedhenry.apps.arthenry.util.adapter.CommitsDetailAdapter;
 import org.feedhenry.apps.arthenry.vo.Project;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+
 import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by summers on 11/4/15.
@@ -121,6 +139,63 @@ public class ProjectDetailDialog extends DialogFragment {
     private void setupToolbarMenu() {
         toolbar.inflateMenu(R.menu.project_details_menu);
 
-        Toast.makeText(getActivity(), "Sharing coming soon!", Toast.LENGTH_LONG).show();
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                final Intent shareIntent = new Intent();
+
+                new AsyncTask<Object, Object, Object>() {
+                    Uri uri;
+                    @Override
+                    protected Object doInBackground(Object[] params) {
+                        URL fileUrl = project.getCommits().get(0).getPhotoUrl();
+                        String fileName = Uri.parse(String.valueOf(fileUrl)).getLastPathSegment();
+                        try {
+                            File file = File.createTempFile(fileName, null, getActivity().getExternalCacheDir());
+                            FileOutputStream os = new FileOutputStream(file);
+                            OkHttpClient client = new OkHttpClient();
+                            Request.Builder requestBuilder = new Request.Builder().url(fileUrl);
+                            for (Header header : FH.getDefaultParamsAsHeaders(null)){
+                                requestBuilder.addHeader(header.getName(), header.getValue());
+                            }
+
+                            Request request = requestBuilder.build();
+                            Response response = client.newCall(request).execute();
+                            os.write(response.body().bytes());
+                            os.close();
+                            String[] path = {file.getCanonicalPath()};
+                            String[] mimeType = {"image/jpeg"};
+                            MediaScannerConnection.scanFile(getActivity(), path, mimeType, new MediaScannerConnection.MediaScannerConnectionClient() {
+                                @Override
+                                public void onMediaScannerConnected() {
+
+                                }
+
+                                @Override
+                                public void onScanCompleted(String path, Uri uri) {
+                                    shareIntent.setAction(Intent.ACTION_SEND);
+                                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                                    shareIntent.setType("image/jpeg");
+                                    startActivity(Intent.createChooser(shareIntent, "Share Meme To "));
+                                }
+                            });
+
+                        } catch (Exception e) {
+                            Log.d("Download to Share", e.getMessage(),e);
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Object o) {
+                        super.onPostExecute(o);
+
+                    }
+                }.execute();
+
+                return true;
+            }
+        });
     }
 }

@@ -50,7 +50,7 @@ public class ApplicationModule {
     public ApplicationModule(Context context) {
         this.context = context.getApplicationContext();
     }
-    private final List<Project> projects = new ArrayList<>();
+    private final static List<Project> projects = new ArrayList<>();
     @Provides
     @Singleton
     public FHClient provideFHClient() {

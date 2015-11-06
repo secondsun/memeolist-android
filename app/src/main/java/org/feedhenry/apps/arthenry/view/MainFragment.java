@@ -115,13 +115,13 @@ public class MainFragment extends Fragment {
 
 
     @Override
-    public void onStart() {
+    public void onResume() {
         super.onStart();
         bus.register(this);
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
         super.onStop();
         bus.unregister(this);
     }
