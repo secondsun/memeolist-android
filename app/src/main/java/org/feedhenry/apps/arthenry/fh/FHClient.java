@@ -53,12 +53,17 @@ public class FHClient {
     private InitFailed failure = null;
     private InitSuccessful success = null;
 
+    static {com.feedhenry.sdk.FHHttpClient.setTimeout(60000);}
+
     private FHClient(Bus bus) {
         this.bus = bus;
         bus.register(this);
     }
 
+
+
     public void connect() {
+
         if (isConnected || isConnecting) {
             return;
         }
@@ -86,7 +91,7 @@ public class FHClient {
                 postConnectFailureRunner(fhResponse);
             }
         });
-        com.feedhenry.sdk.FHHttpClient.setTimeout(60000);
+
     }
 
     public void refreshMemes() {
@@ -114,6 +119,7 @@ public class FHClient {
                                 FH.cloud("/account/me", "GET", null, null, new FHActCallback() {
                                     @Override
                                     public void success(FHResponse fhResponse) {
+                                        Log.d(TAG + " getME", fhResponse.getJson().toString());
                                         setAccount(GsonUtil.GSON.fromJson(fhResponse.getJson().toString(), Account.class));
                                         if (syncBuilder != null) {
                                             syncBuilder.addMetaData(FHAuthSession.SESSION_TOKEN_KEY, session.getToken());

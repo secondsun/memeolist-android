@@ -198,6 +198,7 @@ public class UploadService extends Service {
                     try {
 
                         String accountId = fhClient.getAccount().getDisplayName();
+                        Log.d(TAG, GsonUtil.GSON.toJson(fhClient.getAccount()));
                         TimeZone tz = TimeZone.getTimeZone("GMT");
                         Calendar calendar = Calendar.getInstance(tz);
                         Comment firstComment = new Comment();

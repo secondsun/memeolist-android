@@ -53,11 +53,13 @@ public class ProjectViewAdapter extends RecyclerView.Adapter<ProjectViewAdapter.
         if (project.getCommits().size() == 0) {
             Log.e("No commits in project", GsonUtil.GSON.toJson(project));
         }
-        Commit mostRecentCommit = project.getCommits().get(project.getCommits().size() - 1);
-        holder.item = project;
-        picasso.load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
-        holder.title.setText(mostRecentCommit.getOwnerId());
-        holder.firstDetail.setText(mostRecentCommit.getComments().get(0).getComment());
+        if (project.getCommits().size() > 0) {
+            Commit mostRecentCommit = project.getCommits().get(project.getCommits().size() - 1);
+            holder.item = project;
+            picasso.load(mostRecentCommit.getPhotoUrl().toString()).into(holder.thumb);
+            holder.title.setText(mostRecentCommit.getOwnerId());
+            holder.firstDetail.setText(mostRecentCommit.getComments().get(0).getComment());
+        }
     }
 
     public synchronized Project getProject(int position) {
