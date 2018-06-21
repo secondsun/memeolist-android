@@ -19,10 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import com.feedhenry.sdk.FH;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
 
@@ -40,7 +36,6 @@ import javax.inject.Inject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import cz.msebera.android.httpclient.Header;
 
 /**
  * Created by summers on 11/4/15.

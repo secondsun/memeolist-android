@@ -1,0 +1,32 @@
+type Account {
+  _id: String
+  id: String
+  email: String
+  family_name: String
+  gender: String
+  given_name: String
+  pictureUrl: String
+}
+
+type Project {
+  id: String
+  ownerId: String
+  createdOn: Float
+  updatedOn: Float
+  commits: [Commit]
+}
+
+type Commit {
+  ownerId: String
+  createdOn: Float
+  updatedOn: Float
+  photoUrl: String
+  comments: [Comment]
+}
+
+type Comment {
+  ownerId: String
+  createdOn: Float
+  updatedOn: Float
+  comment: String
+}
