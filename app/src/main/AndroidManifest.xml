@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.feedhenry.apps.arthenry">
+    package="org.aerogear.apps.memeolist">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -9,7 +9,7 @@
 
 
     <application
-        android:name=".ArtHenryApplication"
+        android:name="org.aerogear.apps.memeolist.MemeolistApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,7 +17,7 @@
         android:theme="@style/MyTheme.Base"
         tools:replace="android:icon">
         <activity
-            android:name=".MainActivity"
+            android:name="org.aerogear.apps.memeolist.MainActivity"
             android:label="@string/app_name">
             <!--<intent-filter>-->
             <!--<action android:name="android.intent.action.MAIN" />-->
@@ -27,7 +27,7 @@
         </activity>
         <activity android:name="com.feedhenry.sdk.oauth.FHOAuthIntent" />
         <activity
-            android:name=".ImagePickerActivity"
+            android:name="org.aerogear.apps.memeolist.ImagePickerActivity"
             android:icon="@mipmap/ic_launcher"
             android:theme="@style/MyTheme.Base"
             android:label="@string/meme_list_label">
@@ -35,7 +35,7 @@
                 <action android:name="com.fh.ImagePickerActivity" />
             </intent-filter>
         </activity>
-        <activity android:name=".SplashScreen">
+        <activity android:name="org.aerogear.apps.memeolist.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,7 +43,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.UploadService" />
+        <service android:name="org.aerogear.apps.memeolist.service.UploadService" />
 
     </application>
 
